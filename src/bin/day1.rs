@@ -34,20 +34,14 @@ fn get_num(input: &str) -> u32 {
 
 fn replace_word_digits(input: &str) -> String {
     input
-        .replace("oneight", "18")
-        .replace("threeight", "38")
-        .replace("fiveight", "58")
-        .replace("nineight", "98")
-        .replace("eightwo", "82")
-        .replace("twone", "21")
+        .replace("eight", "e8t")
+        .replace("two", "2o")
         .replace("one", "1")
-        .replace("two", "2")
         .replace("three", "3")
         .replace("four", "4")
         .replace("five", "5")
         .replace("six", "6")
         .replace("seven", "7")
-        .replace("eight", "8")
         .replace("nine", "9")
 }
 
