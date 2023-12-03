@@ -25,12 +25,34 @@ impl Game {
             .collect::<String>()
             .parse::<u32>()
             .expect("");
-        let samples = parts.last().expect("").split(';').collect::<Vec<&str>>();
-        Game {
-            number,
-            samples: vec![(1, 2, 3), (4, 5, 6), (7, 8, 9)],
+        let samples: Vec<(u8, u8, u8)> = parts
+            .last()
+            .expect("")
+            .split(';')
+            .map(|x| extract_rgb(x))
+            .collect();
+        Game { number, samples }
+    }
+}
+
+fn extract_rgb(input: &str) -> (u8, u8, u8) {
+    let pieces: Vec<&str> = input.split(',').collect();
+    let mut red: u8 = 0;
+    let mut blue: u8 = 0;
+    let mut green: u8 = 0;
+
+    for piece in pieces {
+        let portions: Vec<&str> = piece.split(" ").filter(|x| x.len() > 0).collect();
+        let number = portions.first().expect("").parse::<u8>().expect("");
+        let color = portions.last().expect("");
+        match *color {
+            "red" => red = number,
+            "blue" => blue = number,
+            "green" => green = number,
+            _ => panic!(),
         }
     }
+    (red, green, blue)
 }
 
 #[test]
@@ -43,4 +65,9 @@ fn test_new_game() {
             samples: vec![(4, 0, 3), (1, 2, 6), (0, 2, 0)]
         }
     );
+}
+
+#[test]
+fn test_get_tuple() {
+    assert_eq!((1, 2, 3), extract_rgb(" 2 green, 1 red, 3 blue"));
 }
