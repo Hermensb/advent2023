@@ -1,7 +1,9 @@
-use std::fs;
+use std::{fs, io::Write};
 
 fn main() {
     let data: String = fs::read_to_string("data/day3").expect("Didn't find the file?");
+    let p1_result = part1(data);
+    println!("Total {}", p1_result);
 }
 
 fn part1(input: String) -> u32 {
@@ -21,6 +23,7 @@ impl<T> Location<T> {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 struct Symbol {
     pub adjacent: Vec<Location<i32>>,
 }
@@ -43,6 +46,7 @@ impl Symbol {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 struct Number {
     pub value: u32,
     pub locations: Vec<Location<i32>>,
@@ -54,9 +58,40 @@ impl Number {
             .map(|x| Location::new(last_location.x as i32 - x as i32, last_location.y as i32))
             .collect();
         let value: u32 = digits.parse().expect("");
-        Number{value, locations}
-        
+        Number { value, locations }
     }
+}
+
+fn get_numbers(input: &str, line: u32) -> Vec<Number> {
+    let mut result: Vec<Number> = Vec::new();
+    let mut accumulator: Vec<char> = Vec::new();
+    for (index, character) in input.chars().enumerate() {
+        if character.is_ascii_digit() {
+            accumulator.push(character);
+        } else if !accumulator.is_empty() {
+            let num: String = accumulator.iter().collect();
+            result.push(Number::new(&num, Location::new((index - 1) as u32, line)));
+            accumulator = Vec::new();
+        }
+    }
+    if !accumulator.is_empty() {
+        let num: String = accumulator.iter().collect();
+        result.push(Number::new(
+            &num,
+            Location::new((input.len() - 1) as u32, line),
+        ));
+    }
+    result
+}
+
+fn get_symbols(input: &str, line: u32) -> Vec<Symbol> {
+    let mut result: Vec<Symbol> = Vec::new();
+    for (index, character) in input.chars().enumerate() {
+        if !character.is_ascii_alphabetic() && !character.is_ascii_digit() && character != '.' {
+            result.push(Symbol::new(index as u32, line));
+        }
+    }
+    result
 }
 
 #[allow(dead_code)]
@@ -121,4 +156,30 @@ fn number_creation() {
     expected_locations.sort();
 
     assert_eq!(expected_locations, input_locations);
+}
+
+#[test]
+fn number_fetch() {
+    let result = get_numbers(&"..45.3.233.15", 5);
+    let expected = vec![
+        Number::new("45", Location::new(3, 5)),
+        Number::new("3", Location::new(5, 5)),
+        Number::new("233", Location::new(9, 5)),
+        Number::new("15", Location::new(12, 5)),
+    ];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn symbol_fetch() {
+    let result = get_symbols(&"..@.*+..$.#", 5);
+    let expected = vec![
+        Symbol::new(2, 5),
+        Symbol::new(4, 5),
+        Symbol::new(5, 5),
+        Symbol::new(8, 5),
+        Symbol::new(10, 5),
+    ];
+    assert_eq!(result.len(), 5);
+    assert_eq!(result, expected);
 }
