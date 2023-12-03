@@ -3,9 +3,9 @@ use std::fs;
 fn main() {
     let data = fs::read_to_string("data/day2").expect("Didn't find the file?");
     let lines = data.split('\n').filter(|x| x.len() > 0);
-    for line in lines {
-        println!("{}", line);
-    }
+    let games = lines.map(|x| Game::new(x)).filter(|x| x.check_if_impossible((12,13,14)));
+    let total: u32 = games.map(|x| x.number).sum();
+    print!("Total: {}", total);
 }
 
 #[derive(Debug, PartialEq)]
@@ -32,6 +32,21 @@ impl Game {
             .map(|x| extract_rgb(x))
             .collect();
         Game { number, samples }
+    }
+
+    pub fn check_if_impossible(&self, max_vals: (u8, u8, u8)) -> bool {
+        for vals in &self.samples {
+            if vals.0 > max_vals.0 {
+                return false;
+            }
+            if vals.1 > max_vals.1 {
+                return false;
+            }
+            if vals.2 > max_vals.2 {
+                return false;
+            }
+        }
+        true
     }
 }
 
@@ -70,4 +85,17 @@ fn test_new_game() {
 #[test]
 fn test_get_tuple() {
     assert_eq!((1, 2, 3), extract_rgb(" 2 green, 1 red, 3 blue"));
+}
+
+#[test]
+fn test_possible() {
+    let game = Game::new("Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue");
+    assert!(game.check_if_impossible((12, 13, 14)));
+}
+
+#[test]
+fn test_impossible() {
+    let game =
+        Game::new("Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red");
+    assert!(!game.check_if_impossible((12, 13, 14)));
 }
