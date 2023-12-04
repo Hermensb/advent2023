@@ -34,6 +34,7 @@ impl Game {
         Game { number, samples }
     }
 
+    #[allow(dead_code)]
     pub fn check_if_impossible(&self, max_vals: (u8, u8, u8)) -> bool {
         for vals in &self.samples {
             if vals.0 > max_vals.0 {
