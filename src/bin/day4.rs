@@ -1,4 +1,7 @@
-use std::{collections::HashSet, fs};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+};
 
 fn main() {
     let data: String = fs::read_to_string("data/day4").expect("Didn't find the file?");
@@ -19,7 +22,24 @@ fn part1(input: &str) -> u32 {
 }
 
 fn part2(input: &str) -> u32 {
-    0
+    let mut card_counts: HashMap<u32, u32> = HashMap::new();
+    let lines = input.split('\n').filter(|x| x.len() > 0);
+    let overlap_counts: Vec<u32> = lines
+        .map(|x| extract_sets(x))
+        .map(|x| get_overlap_count(&x.0, &x.1))
+        .collect();
+
+    for (index, count) in overlap_counts.iter().enumerate() {
+        let game_number: u32 = (index + 1) as u32;
+        *card_counts.entry(game_number).or_default() += 1;
+
+        let current_card_count: u32 = card_counts.get(&game_number).unwrap().clone();
+
+        for i in game_number + 1..game_number + count + 1 {
+            *card_counts.entry(i).or_default() += current_card_count;
+        }
+    }
+    card_counts.values().sum()
 }
 
 fn extract_sets(input: &str) -> (HashSet<u32>, HashSet<u32>) {
@@ -41,6 +61,11 @@ fn extract_sets(input: &str) -> (HashSet<u32>, HashSet<u32>) {
             .map(|x| x.parse::<u32>().unwrap()),
     );
     (entries, winning_numbers)
+}
+
+fn get_overlap_count(entries: &HashSet<u32>, winning_numbers: &HashSet<u32>) -> u32 {
+    let overlap: Vec<&u32> = entries.intersection(winning_numbers).collect();
+    overlap.len() as u32
 }
 
 fn get_score(entries: &HashSet<u32>, winning_numbers: &HashSet<u32>) -> u32 {
