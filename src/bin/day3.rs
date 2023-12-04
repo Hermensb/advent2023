@@ -20,6 +20,7 @@ fn part1(input: String) -> u32 {
         .flatten()
         .map(|x| x.adjacent)
         .flatten()
+        .filter(|x| x.x >= 0 && x.y >= 0)
         .collect();
 
     let overlaps: HashSet<Location<i32>> = HashSet::from_iter(overlap_locations.iter().cloned());
@@ -32,7 +33,7 @@ fn part1(input: String) -> u32 {
             .iter()
             .filter(|x| overlaps.contains(*x))
             .collect();
-        if  intersection.len() > 0 {
+        if intersection.len() > 0 {
             total += number.value;
         }
     }
@@ -116,7 +117,11 @@ fn get_numbers(input: &str, line: u32) -> Vec<Number> {
 fn get_symbols(input: &str, line: u32) -> Vec<Symbol> {
     let mut result: Vec<Symbol> = Vec::new();
     for (index, character) in input.chars().enumerate() {
-        if !character.is_ascii_alphabetic() && !character.is_ascii_digit() && character != '.' {
+        if !character.is_ascii_alphabetic()
+            && !character.is_ascii_digit()
+            && !character.is_ascii_whitespace()
+            && character != '.'
+        {
             result.push(Symbol::new(index as u32, line));
         }
     }
@@ -138,6 +143,13 @@ fn get_test_data() -> String {
         .to_string()
 }
 
+fn get_other_test_data() -> String {
+    ".4.
+4.4
+.4."
+    .to_string()
+}
+
 #[test]
 fn test_data() {
     let data = get_test_data();
@@ -148,7 +160,7 @@ fn test_data() {
 
 #[test]
 fn test_input() {
-    assert_eq!(part1(get_test_data()), 4361);
+    assert_eq!(part1(get_other_test_data()), 0);
 }
 
 #[test]
