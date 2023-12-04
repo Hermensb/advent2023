@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs, io::Write};
+use std::{collections::HashSet, fs};
 
 fn main() {
     let data: String = fs::read_to_string("data/day3").expect("Didn't find the file?");
