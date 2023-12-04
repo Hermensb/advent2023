@@ -72,12 +72,12 @@ fn extract_rgb(input: &str) -> (u8, u8, u8) {
     for piece in pieces {
         let portions: Vec<&str> = piece.split(" ").filter(|x| x.len() > 0).collect();
         let number = portions.first().expect("").parse::<u8>().expect("");
-        let color = portions.last().expect("");
-        match *color {
+        let color = portions.last().expect("").trim();
+        match color {
             "red" => red = number,
             "blue" => blue = number,
             "green" => green = number,
-            _ => panic!(),
+            _ => panic!("Failed to match red, green, or blue"),
         }
     }
     (red, green, blue)
