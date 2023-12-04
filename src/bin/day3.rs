@@ -1,4 +1,4 @@
-use std::{fs, io::Write};
+use std::{collections::HashSet, fs, io::Write};
 
 fn main() {
     let data: String = fs::read_to_string("data/day3").expect("Didn't find the file?");
@@ -7,11 +7,40 @@ fn main() {
 }
 
 fn part1(input: String) -> u32 {
-    let lines: Vec<&str> = input.split('\n').collect();
-    58
+    let numbers: Vec<Number> = input
+        .split('\n')
+        .enumerate()
+        .map(|x| get_numbers(x.1, x.0 as u32))
+        .flatten()
+        .collect();
+    let overlap_locations: Vec<Location<i32>> = input
+        .split('\n')
+        .enumerate()
+        .map(|x| get_symbols(x.1, x.0 as u32))
+        .flatten()
+        .map(|x| x.adjacent)
+        .flatten()
+        .collect();
+
+    let overlaps: HashSet<Location<i32>> = HashSet::from_iter(overlap_locations.iter().cloned());
+
+    let mut total: u32 = 0;
+
+    for number in numbers {
+        let intersection: Vec<&Location<i32>> = number
+            .locations
+            .iter()
+            .filter(|x| overlaps.contains(*x))
+            .collect();
+        if  intersection.len() > 0 {
+            total += number.value;
+        }
+    }
+
+    total
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Ord, Eq)]
+#[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone)]
 struct Location<T> {
     x: T,
     y: T,
