@@ -2,11 +2,14 @@ use std::{collections::HashSet, fs};
 
 fn main() {
     let data: String = fs::read_to_string("data/day3").expect("Didn't find the file?");
-    let p1_result = part1(data);
-    println!("Total {}", p1_result);
+    let p1_result = part1(&data);
+    println!("Part 1 Total {}", p1_result);
+
+    let p2_result = part2(&data);
+    println!("Part 2 Total {}", p2_result);
 }
 
-fn part1(input: String) -> u32 {
+fn part1(input: &str) -> u32 {
     let numbers: Vec<Number> = input
         .split('\n')
         .enumerate()
@@ -39,6 +42,10 @@ fn part1(input: String) -> u32 {
     }
 
     total
+}
+
+fn part2(input: &str) -> u32 {
+    42
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone)]
@@ -156,8 +163,13 @@ fn test_data() {
 }
 
 #[test]
-fn test_input() {
-    assert_eq!(part1(get_test_data()), 4361);
+fn test_input_part_1() {
+    assert_eq!(part1(&get_test_data()), 4361);
+}
+
+#[test]
+fn test_input_part_2() {
+    assert_eq!(part2(&get_test_data()), 467835);
 }
 
 #[test]
