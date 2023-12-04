@@ -55,11 +55,12 @@ impl<T> Location<T> {
 
 #[derive(Debug, PartialEq, Eq)]
 struct Symbol {
+    pub symbol: char,
     pub adjacent: Vec<Location<i32>>,
 }
 
 impl Symbol {
-    pub fn new(x: u32, y: u32) -> Symbol {
+    pub fn new(symbol: char, x: u32, y: u32) -> Symbol {
         let u = x as i32;
         let v = y as i32;
         let adjacent = vec![
@@ -72,7 +73,10 @@ impl Symbol {
             Location::new(u, v + 1),
             Location::new(u + 1, v + 1),
         ];
-        Symbol { adjacent: adjacent }
+        Symbol {
+            symbol,
+            adjacent: adjacent,
+        }
     }
 }
 
@@ -122,7 +126,7 @@ fn get_symbols(input: &str, line: u32) -> Vec<Symbol> {
             && !character.is_ascii_whitespace()
             && character != '.'
         {
-            result.push(Symbol::new(index as u32, line));
+            result.push(Symbol::new(character, index as u32, line));
         }
     }
     result
@@ -143,13 +147,6 @@ fn get_test_data() -> String {
         .to_string()
 }
 
-fn get_other_test_data() -> String {
-    ".4.
-4.4
-.4."
-    .to_string()
-}
-
 #[test]
 fn test_data() {
     let data = get_test_data();
@@ -160,12 +157,12 @@ fn test_data() {
 
 #[test]
 fn test_input() {
-    assert_eq!(part1(get_other_test_data()), 0);
+    assert_eq!(part1(get_test_data()), 4361);
 }
 
 #[test]
 fn new_symbol() {
-    let symbol = Symbol::new(3, 3);
+    let symbol = Symbol::new('*', 3, 3);
     let mut expected = vec![
         Location::new(2, 2),
         Location::new(2, 3),
@@ -215,11 +212,11 @@ fn number_fetch() {
 fn symbol_fetch() {
     let result = get_symbols(&"..@.*+..$.#", 5);
     let expected = vec![
-        Symbol::new(2, 5),
-        Symbol::new(4, 5),
-        Symbol::new(5, 5),
-        Symbol::new(8, 5),
-        Symbol::new(10, 5),
+        Symbol::new('@', 2, 5),
+        Symbol::new('*', 4, 5),
+        Symbol::new('+', 5, 5),
+        Symbol::new('$', 8, 5),
+        Symbol::new('#', 10, 5),
     ];
     assert_eq!(result.len(), 5);
     assert_eq!(result, expected);
