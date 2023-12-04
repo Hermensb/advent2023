@@ -1,7 +1,7 @@
 use std::{collections::HashSet, fs};
 
 fn main() {
-    let data: String = fs::read_to_string("data/day3").expect("Didn't find the file?");
+    let data: String = fs::read_to_string("data/day4").expect("Didn't find the file?");
     let p1_result = part1(&data);
     println!("Part 1 Total {}", p1_result);
 
@@ -10,11 +10,50 @@ fn main() {
 }
 
 fn part1(input: &str) -> u32 {
-    0
+    let lines = input.split('\n').filter(|x| x.len() > 0);
+    let total: u32 = lines
+        .map(|x| extract_sets(x))
+        .map(|x| get_score(&x.0, &x.1))
+        .sum();
+    total
 }
 
 fn part2(input: &str) -> u32 {
     0
+}
+
+fn extract_sets(input: &str) -> (HashSet<u32>, HashSet<u32>) {
+    let numbers: Vec<&str> = input.split(':').last().expect("").split('|').collect();
+    let entries: HashSet<u32> = HashSet::from_iter(
+        numbers
+            .first()
+            .expect("")
+            .split(" ")
+            .filter(|x| x.len() > 0)
+            .map(|x| x.parse::<u32>().unwrap()),
+    );
+    let winning_numbers: HashSet<u32> = HashSet::from_iter(
+        numbers
+            .last()
+            .expect("")
+            .split(" ")
+            .filter(|x| x.len() > 0)
+            .map(|x| x.parse::<u32>().unwrap()),
+    );
+    (entries, winning_numbers)
+}
+
+fn get_score(entries: &HashSet<u32>, winning_numbers: &HashSet<u32>) -> u32 {
+    let overlap: Vec<&u32> = entries.intersection(winning_numbers).collect();
+    double(overlap.len().try_into().unwrap())
+}
+
+fn double(count: u32) -> u32 {
+    if count == 0 {
+        return 0;
+    }
+    let base: u32 = 2;
+    base.pow(count - 1)
 }
 
 #[allow(dead_code)]
@@ -31,4 +70,33 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
 #[test]
 fn test_part1() {
     assert_eq!(part1(&test_data()), 13);
+}
+
+#[test]
+fn test_part2() {
+    assert_eq!(part2(&test_data()), 30);
+}
+
+#[test]
+fn line_into_hashsets() {
+    let line = "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53";
+    let expected = (
+        HashSet::from([41, 48, 83, 86, 17]),
+        HashSet::from([83, 86, 6, 31, 17, 9, 48, 53]),
+    );
+    assert_eq!(extract_sets(line), expected);
+}
+
+#[test]
+fn test_get_score() {
+    let entries: HashSet<u32> = HashSet::from([13, 25, 17, 47, 64, 18]);
+    let winning_numbers: HashSet<u32> = HashSet::from([12, 13, 44, 47, 65, 18]);
+    assert_eq!(get_score(&entries, &winning_numbers), 4);
+}
+
+#[test]
+fn test_get_score_no_overlap() {
+    let entries: HashSet<u32> = HashSet::from([13, 25, 17, 47, 64, 18]);
+    let winning_numbers: HashSet<u32> = HashSet::from([12, 44, 65]);
+    assert_eq!(get_score(&entries, &winning_numbers), 0);
 }
