@@ -45,7 +45,38 @@ fn part1(input: &str) -> u32 {
 }
 
 fn part2(input: &str) -> u32 {
-    42
+    let mut total: u32 = 0;
+    let numbers: Vec<Number> = input
+        .split('\n')
+        .enumerate()
+        .map(|x| get_numbers(x.1, x.0 as u32))
+        .flatten()
+        .collect();
+    let symbols: Vec<Symbol> = input
+        .split('\n')
+        .enumerate()
+        .map(|x| get_symbols(x.1, x.0 as u32))
+        .flatten()
+        .filter(|x| x.symbol == '*')
+        .collect();
+
+    for symbol in symbols {
+        let matched_numbers: Vec<&Number> = numbers
+            .iter()
+            .filter(|x| {
+                &x.locations
+                    .intersection(&symbol.adjacent)
+                    .collect::<Vec<&Location<i32>>>()
+                    .len()
+                    > &0
+            })
+            .collect();
+
+        if matched_numbers.len() > 1 {
+            total += matched_numbers.iter().map(|x| x.value).product::<u32>();
+        }
+    }
+    total
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone)]
@@ -63,34 +94,30 @@ impl<T> Location<T> {
 #[derive(Debug, PartialEq, Eq)]
 struct Symbol {
     pub symbol: char,
-    pub adjacent: Vec<Location<i32>>,
+    pub adjacent: HashSet<Location<i32>>,
 }
 
 impl Symbol {
     pub fn new(symbol: char, x: u32, y: u32) -> Symbol {
         let u = x as i32;
         let v = y as i32;
-        let adjacent = vec![
-            Location::new(u - 1, v - 1),
-            Location::new(u, v - 1),
-            Location::new(u + 1, v - 1),
-            Location::new(u - 1, v),
-            Location::new(u + 1, v),
-            Location::new(u - 1, v + 1),
-            Location::new(u, v + 1),
-            Location::new(u + 1, v + 1),
-        ];
-        Symbol {
-            symbol,
-            adjacent: adjacent,
-        }
+        let mut adjacent: HashSet<Location<i32>> = HashSet::new();
+        adjacent.insert(Location::new(u - 1, v - 1));
+        adjacent.insert(Location::new(u, v - 1));
+        adjacent.insert(Location::new(u + 1, v - 1));
+        adjacent.insert(Location::new(u - 1, v));
+        adjacent.insert(Location::new(u + 1, v));
+        adjacent.insert(Location::new(u - 1, v + 1));
+        adjacent.insert(Location::new(u, v + 1));
+        adjacent.insert(Location::new(u + 1, v + 1));
+        Symbol { symbol, adjacent }
     }
 }
 
 #[derive(Debug, PartialEq, Eq)]
 struct Number {
     pub value: u32,
-    pub locations: Vec<Location<i32>>,
+    pub locations: HashSet<Location<i32>>,
 }
 
 impl Number {
@@ -175,7 +202,7 @@ fn test_input_part_2() {
 #[test]
 fn new_symbol() {
     let symbol = Symbol::new('*', 3, 3);
-    let mut expected = vec![
+    let expected: HashSet<Location<i32>> = HashSet::from([
         Location::new(2, 2),
         Location::new(2, 3),
         Location::new(2, 4),
@@ -184,10 +211,8 @@ fn new_symbol() {
         Location::new(4, 2),
         Location::new(4, 3),
         Location::new(4, 4),
-    ];
-    let mut input = symbol.adjacent;
-    input.sort();
-    expected.sort();
+    ]);
+    let input = symbol.adjacent;
     assert_eq!(input, expected);
 }
 
@@ -196,14 +221,12 @@ fn number_creation() {
     let number = Number::new("654", Location::new(3, 3));
     assert_eq!(654, number.value);
 
-    let mut expected_locations = vec![
+    let expected_locations: HashSet<Location<i32>> = HashSet::from([
         Location::new(3, 3),
         Location::new(2, 3),
         Location::new(1, 3),
-    ];
-    let mut input_locations = number.locations;
-    input_locations.sort();
-    expected_locations.sort();
+    ]);
+    let input_locations = number.locations;
 
     assert_eq!(expected_locations, input_locations);
 }
