@@ -1,4 +1,7 @@
-use std::{collections::HashMap, fs};
+use std::{
+    collections::{HashMap, HashSet},
+    fs, vec,
+};
 
 fn main() {
     let data: String = fs::read_to_string("data/day5").expect("Didn't find the file?");
@@ -9,16 +12,56 @@ fn main() {
     println!("Part 2 Total {}", p2_result);
 }
 
-fn part1(input: &str) -> u32 {
-    let lines = input.split("\n\n");
-    for line in lines {
-        println!("{line:?}");
+fn part1(input: &str) -> u64 {
+    let lines: Vec<String> = input.split("\n\n").map(|x| x.to_string()).collect();
+
+    let mut seeds: HashSet<u64> = extract_seeds(&lines[0]);
+    let translators: Vec<Translator> = lines[1..]
+        .iter()
+        .map(|x| extract_translations(x))
+        .map(|x| Translator::new(&x))
+        .collect();
+    for t in translators.iter() {
+        seeds = seeds.iter().map(|x| t.translate(*x)).collect();
     }
-    0
+
+    *seeds.iter().min().unwrap()
 }
 
 fn part2(input: &str) -> u32 {
     0
+}
+
+fn extract_seeds(input: &str) -> HashSet<u64> {
+    let numbers: String = input.split(':').last().unwrap().to_string();
+    let result: HashSet<u64> = numbers
+        .split(" ")
+        .filter(|x| x.len() > 0)
+        .map(|x| x.trim())
+        .map(|x| x.parse::<u64>().unwrap())
+        .collect();
+    result
+}
+
+fn extract_translations(input: &str) -> Vec<(u64, u64, u64)> {
+    let mut result: Vec<(u64, u64, u64)> = vec![];
+    let number_groups = input
+        .split(':')
+        .last()
+        .unwrap()
+        .split('\n')
+        .filter(|x| x.len() > 0);
+    for group in number_groups {
+        let stuff: Vec<u64> = group
+            .split(' ')
+            .filter(|x| x.len() > 0)
+            .map(|x| x.trim())
+            .map(|x| x.parse().unwrap())
+            .collect();
+
+        result.push((stuff[0], stuff[1], stuff[2]));
+    }
+    result
 }
 
 struct Translator<'a> {
@@ -27,11 +70,11 @@ struct Translator<'a> {
 }
 
 impl<'a> Translator<'a> {
-    fn new(input: Vec<(u64, u64, u64)>) -> Translator<'a> {
+    fn new(input: &[(u64, u64, u64)]) -> Translator<'a> {
         let mut translations: HashMap<u64, u64> = HashMap::new();
 
         for (to, from, iterations) in input {
-            for i in 0..iterations {
+            for i in 0..*iterations {
                 translations.insert(from + i, to + i);
             }
         }
@@ -62,6 +105,7 @@ impl<'a> Translator<'a> {
     }
 }
 
+#[allow(dead_code)]
 fn get_test_data() -> String {
     "seeds: 79 14 55 13
 
@@ -106,19 +150,37 @@ fn test_part1() {
 
 #[test]
 fn create_translator() {
-    let input: Vec<(u64, u64, u64)> = vec![(20, 10, 5)];
-    let translator = Translator::new(input);
+    let input: [(u64, u64, u64); 1] = [(20, 10, 5)];
+    let translator = Translator::new(&input);
     assert_eq!(translator.translate(12), 22);
     assert_eq!(translator.translate(40), 40);
 }
 
 #[test]
 fn test_translate_chain() {
-    let input1: Vec<(u64, u64, u64)> = vec![(20, 10, 5)];
-    let input2: Vec<(u64, u64, u64)> = vec![(30, 20, 5)];
-    let mut t1 = Translator::new(input1);
-    let t2 = Translator::new(input2);
+    let input1: [(u64, u64, u64); 1] = [(20, 10, 5)];
+    let input2: [(u64, u64, u64); 1] = [(30, 20, 5)];
+    let mut t1 = Translator::new(&input1);
+    let t2 = Translator::new(&input2);
     t1.set_internal_translator(&t2);
     assert_eq!(t1.translate(11), 31);
     assert_eq!(t1.translate(9), 9);
+}
+
+#[test]
+fn test_get_seeds() {
+    let input: String = "seeds: 79 14 55 13".to_string();
+    assert_eq!(extract_seeds(&input), HashSet::from([79, 14, 55, 13]));
+}
+
+#[test]
+fn test_extract_translations() {
+    let input: String = "blah-to-eh translations:
+10 20 30
+40 50 60"
+        .to_string();
+    assert_eq!(
+        extract_translations(&input),
+        vec![(10, 20, 30), (40, 50, 60)]
+    );
 }
