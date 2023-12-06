@@ -32,6 +32,14 @@ fn convert_data(input: &str) -> HashMap<u32, u32> {
     pairs
 }
 
+fn count_win_possibilities(time: u32, record: u32) -> u32 {
+    let winning_runs: Vec<u32> = (0..=time)
+        .map(|x| (7 - x) * x)
+        .filter(|x| x > &record)
+        .collect();
+    winning_runs.len() as u32
+}
+
 #[allow(dead_code)]
 fn get_test_data() -> String {
     "Time:      7  15   30
@@ -50,4 +58,9 @@ fn test_data_to_hashmap() {
 #[test]
 fn test_part1() {
     assert_eq!(part1(&get_test_data()), 288);
+}
+
+#[test]
+fn test_win_count() {
+    assert_eq!(count_win_possibilities(7, 9), 4);
 }
