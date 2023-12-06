@@ -36,7 +36,6 @@ fn convert_data1(input: &str) -> HashMap<u64, u64> {
                 .collect()
         })
         .collect();
-    println!("{lines:?}");
     let pairs: HashMap<u64, u64> = (0..lines[0].len())
         .map(|x| (lines[0][x], lines[1][x]))
         .collect();
