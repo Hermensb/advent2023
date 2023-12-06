@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs, vec};
+use std::{fs, vec};
 
 fn main() {
     let data: String = fs::read_to_string("data/day5").expect("Didn't find the file?");
