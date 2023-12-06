@@ -1,8 +1,4 @@
-use std::{
-    collections::{HashSet},
-    fs,
-    vec,
-};
+use std::{collections::HashSet, fs, vec};
 
 fn main() {
     let data: String = fs::read_to_string("data/day5").expect("Didn't find the file?");
@@ -16,7 +12,7 @@ fn main() {
 fn part1(input: &str) -> u64 {
     let lines: Vec<String> = input.split("\n\n").map(|x| x.to_string()).collect();
 
-    let mut seeds: HashSet<u64> = extract_seeds(&lines[0]);
+    let mut seeds: Vec<u64> = extract_seeds(&lines[0]);
     let translations: Vec<Vec<(u64, u64, u64)>> =
         lines[1..].iter().map(|x| extract_translations(x)).collect();
     let translators: Vec<Translator> = translations.iter().map(|x| Translator::new(&x)).collect();
@@ -28,13 +24,29 @@ fn part1(input: &str) -> u64 {
     *seeds.iter().min().unwrap()
 }
 
-fn part2(_input: &str) -> u32 {
-    0
+fn part2(input: &str) -> u64 {
+    let lines: Vec<String> = input.split("\n\n").map(|x| x.to_string()).collect();
+
+    let seed_ranges: Vec<u64> = extract_seeds(&lines[0]);
+    let mut seeds: Vec<u64> = (0..seed_ranges.len())
+        .step_by(2)
+        .map(|i| (seed_ranges[i]..seed_ranges[i] + seed_ranges[i + 1]).collect::<Vec<u64>>())
+        .flatten()
+        .collect();
+    let translations: Vec<Vec<(u64, u64, u64)>> =
+        lines[1..].iter().map(|x| extract_translations(x)).collect();
+    let translators: Vec<Translator> = translations.iter().map(|x| Translator::new(&x)).collect();
+
+    for t in translators.iter() {
+        seeds = seeds.iter().map(|x| t.translate(*x)).collect();
+    }
+
+    *seeds.iter().min().unwrap()
 }
 
-fn extract_seeds(input: &str) -> HashSet<u64> {
+fn extract_seeds(input: &str) -> Vec<u64> {
     let numbers: String = input.split(':').last().unwrap().to_string();
-    let result: HashSet<u64> = numbers
+    let result: Vec<u64> = numbers
         .split(" ")
         .filter(|x| x.len() > 0)
         .map(|x| x.trim())
@@ -130,6 +142,11 @@ fn test_part1() {
 }
 
 #[test]
+fn test_part2() {
+    assert_eq!(part2(&get_test_data()), 46);
+}
+
+#[test]
 fn create_translator() {
     let input: [(u64, u64, u64); 1] = [(20, 10, 5)];
     let translator = Translator::new(&input);
@@ -150,7 +167,7 @@ fn test_translate_chain() {
 #[test]
 fn test_get_seeds() {
     let input: String = "seeds: 79 14 55 13".to_string();
-    assert_eq!(extract_seeds(&input), HashSet::from([79, 14, 55, 13]));
+    assert_eq!(extract_seeds(&input), Vec::from([79, 14, 55, 13]));
 }
 
 #[test]
