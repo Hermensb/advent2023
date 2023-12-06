@@ -9,17 +9,20 @@ fn main() {
     println!("Part 2 Total {}", p2_result);
 }
 
-fn part1(input: &str) -> u32 {
-    let data = convert_data(input);
-    data.iter().map(|x| count_win_possibilities(*x.0, *x.1)).product()
+fn part1(input: &str) -> u64 {
+    let data = convert_data1(input);
+    data.iter()
+        .map(|x| count_win_possibilities(*x.0, *x.1))
+        .product()
 }
 
-fn part2(input: &str) -> u32 {
-    0
+fn part2(input: &str) -> u64 {
+    let data = convert_data2(input);
+    count_win_possibilities(data.0, data.1)
 }
 
-fn convert_data(input: &str) -> HashMap<u32, u32> {
-    let lines: Vec<Vec<u32>> = input
+fn convert_data1(input: &str) -> HashMap<u64, u64> {
+    let lines: Vec<Vec<u64>> = input
         .split("\n")
         .filter(|x| x.len() > 0)
         .map(|x| {
@@ -33,19 +36,35 @@ fn convert_data(input: &str) -> HashMap<u32, u32> {
                 .collect()
         })
         .collect();
-        println!("{lines:?}");
-    let pairs: HashMap<u32, u32> = (0..lines[0].len())
+    println!("{lines:?}");
+    let pairs: HashMap<u64, u64> = (0..lines[0].len())
         .map(|x| (lines[0][x], lines[1][x]))
         .collect();
     pairs
 }
 
-fn count_win_possibilities(time: u32, record: u32) -> u32 {
-    let winning_runs: Vec<u32> = (0..=time)
+fn convert_data2(input: &str) -> (u64, u64) {
+    let lines: Vec<u64> = input
+        .split("\n")
+        .filter(|x| x.len() > 0)
+        .map(|x| {
+            x.split(":")
+                .last()
+                .unwrap()
+                .replace(" ", "")
+                .parse()
+                .unwrap()
+        })
+        .collect();
+    (lines[0], lines[1])
+}
+
+fn count_win_possibilities(time: u64, record: u64) -> u64 {
+    let winning_runs = (0..=time)
         .map(|x| (time - x) * x)
         .filter(|x| x > &record)
-        .collect();
-    winning_runs.len() as u32
+        .count();
+    winning_runs as u64
 }
 
 #[allow(dead_code)]
@@ -58,7 +77,7 @@ Distance:  9  40  200"
 #[test]
 fn test_data_to_hashmap() {
     assert_eq!(
-        convert_data(&get_test_data()),
+        convert_data1(&get_test_data()),
         HashMap::from([(7, 9), (15, 40), (30, 200)])
     );
 }
@@ -69,6 +88,16 @@ fn test_part1() {
 }
 
 #[test]
+fn test_part2() {
+    assert_eq!(part2(&get_test_data()), 71503);
+}
+
+#[test]
 fn test_win_count() {
     assert_eq!(count_win_possibilities(7, 9), 4);
+}
+
+#[test]
+fn test_data_to_tuple() {
+    assert_eq!(convert_data2(&get_test_data()), (71530, 940200));
 }
