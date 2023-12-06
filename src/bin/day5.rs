@@ -1,6 +1,8 @@
 use std::{
     collections::{HashMap, HashSet},
-    fs, vec,
+    fs,
+    io::Write,
+    vec,
 };
 
 fn main() {
@@ -16,11 +18,10 @@ fn part1(input: &str) -> u64 {
     let lines: Vec<String> = input.split("\n\n").map(|x| x.to_string()).collect();
 
     let mut seeds: HashSet<u64> = extract_seeds(&lines[0]);
-    let translators: Vec<Translator> = lines[1..]
-        .iter()
-        .map(|x| extract_translations(x))
-        .map(|x| Translator::new(&x))
-        .collect();
+    let translations: Vec<Vec<(u64, u64, u64)>> =
+        lines[1..].iter().map(|x| extract_translations(x)).collect();
+    let translators: Vec<Translator> = translations.iter().map(|x| Translator::new(&x)).collect();
+
     for t in translators.iter() {
         seeds = seeds.iter().map(|x| t.translate(*x)).collect();
     }
@@ -28,7 +29,7 @@ fn part1(input: &str) -> u64 {
     *seeds.iter().min().unwrap()
 }
 
-fn part2(input: &str) -> u32 {
+fn part2(_input: &str) -> u32 {
     0
 }
 
@@ -65,43 +66,24 @@ fn extract_translations(input: &str) -> Vec<(u64, u64, u64)> {
 }
 
 struct Translator<'a> {
-    translations: HashMap<u64, u64>,
-    translator: Option<&'a Translator<'a>>,
+    translations: &'a [(u64, u64, u64)],
 }
 
 impl<'a> Translator<'a> {
-    fn new(input: &[(u64, u64, u64)]) -> Translator<'a> {
-        let mut translations: HashMap<u64, u64> = HashMap::new();
-
-        for (to, from, iterations) in input {
-            for i in 0..*iterations {
-                translations.insert(from + i, to + i);
-            }
-        }
-        println!("{translations:?}");
-
-        Translator {
-            translations,
-            translator: None,
-        }
-    }
-
-    fn set_internal_translator(&mut self, translator: &'a Translator) {
-        self.translator = Some(translator);
+    fn new(translations: &'a [(u64, u64, u64)]) -> Translator<'a> {
+        Translator { translations }
     }
 
     fn translate(&self, input: u64) -> u64 {
-        let result: Option<u64> = self.translations.get(&input).copied();
-        let mut output: u64;
-
-        match result {
-            Some(number) => output = number,
-            None => output = input,
+        for t in self.translations {
+            if input >= t.1 {
+                let diff = input - t.1;
+                if diff < t.2 {
+                    return t.0 + diff;
+                }
+            }
         }
-        match self.translator {
-            Some(t) => return t.translate(output),
-            None => return output,
-        }
+        input.clone()
     }
 }
 
@@ -160,11 +142,10 @@ fn create_translator() {
 fn test_translate_chain() {
     let input1: [(u64, u64, u64); 1] = [(20, 10, 5)];
     let input2: [(u64, u64, u64); 1] = [(30, 20, 5)];
-    let mut t1 = Translator::new(&input1);
+    let t1 = Translator::new(&input1);
     let t2 = Translator::new(&input2);
-    t1.set_internal_translator(&t2);
-    assert_eq!(t1.translate(11), 31);
-    assert_eq!(t1.translate(9), 9);
+    assert_eq!(t2.translate(t1.translate(11)), 31);
+    assert_eq!(t2.translate(t1.translate(9)), 9);
 }
 
 #[test]
