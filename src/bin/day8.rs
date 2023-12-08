@@ -1,6 +1,5 @@
-
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 fn main() {
     let data: String = fs::read_to_string("data/day8").expect("Didn't find the file?");
@@ -14,7 +13,7 @@ fn main() {
 fn part1(input: &str) -> u64 {
     let mut lines = input.lines().filter(|x| x.len() > 0);
     let directions: Vec<Direction> = get_directions(lines.next().unwrap());
-    let map: HashMap<&str, Next> = lines.map(|x| extract(x)).collect();
+    let map: HashMap<String, Next> = lines.map(|x| extract(x)).collect();
 
     let mut current_key: &str = &"AAA";
     let mut steps: u64 = 0;
@@ -22,14 +21,39 @@ fn part1(input: &str) -> u64 {
         let d_index = (steps % directions.len() as u64) as usize;
         let next_instruction = &directions[d_index];
         current_key = map.get(current_key).unwrap().next(next_instruction);
-        steps +=1
+        steps += 1
     }
     steps
-    
 }
 
-fn part2(_input: &str) -> u64 {
-    0
+fn part2(input: &str) -> u64 {
+    let mut lines = input.lines().filter(|x| x.len() > 0);
+    let directions: Vec<Direction> = get_directions(lines.next().unwrap());
+    let map: HashMap<String, Next> = lines.map(|x| extract(x)).collect();
+
+    let mut current_keys: Vec<String> = map
+        .keys()
+        .filter(|&x| x.ends_with('A'))
+        .map(|x| x.to_string())
+        .collect();
+    let mut steps: u64 = 0;
+    let path_count: usize = current_keys.len();
+
+    while &current_keys.iter().filter(|x| x.ends_with('Z')).count() < &path_count {
+        let d_index = (steps % directions.len() as u64) as usize;
+        let next_instruction = &directions[d_index];
+
+        for i in 0..path_count {
+            let key = &current_keys[i];
+            current_keys[i] = map.get(key).unwrap().next(next_instruction).to_string();
+        }
+        steps += 1;
+
+        if steps % 1_000_000 == 0 {
+            println!("{steps:?}");
+        }
+    }
+    steps
 }
 
 #[derive(Debug, PartialEq)]
@@ -73,9 +97,9 @@ fn to_direction(character: char) -> Direction {
     }
 }
 
-fn extract(data: &str) -> (&str, Next) {
+fn extract(data: &str) -> (String, Next) {
     let mut parts = data.split('=');
-    let key: &str = parts.next().unwrap().trim();
+    let key: String = parts.next().unwrap().trim().to_string();
     let next_parts: Vec<&str> = parts
         .next()
         .unwrap()
@@ -112,6 +136,21 @@ ZZZ = (ZZZ, ZZZ)"
         .to_string()
 }
 
+#[allow(dead_code)]
+fn get_part2_data() -> String {
+    "LR
+
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)"
+        .to_string()
+}
+
 #[test]
 fn test_part1_data1() {
     assert_eq!(part1(&get_test_data1()), 2)
@@ -120,6 +159,11 @@ fn test_part1_data1() {
 #[test]
 fn test_part1_data2() {
     assert_eq!(part1(&get_test_data2()), 6)
+}
+
+#[test]
+fn test_part2() {
+    assert_eq!(part2(&get_part2_data()), 6)
 }
 
 #[test]
