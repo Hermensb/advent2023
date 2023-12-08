@@ -3,7 +3,7 @@ use std::fs;
 use std::collections::HashMap;
 
 fn main() {
-    let data: String = fs::read_to_string("data/day7").expect("Didn't find the file?");
+    let data: String = fs::read_to_string("data/day8").expect("Didn't find the file?");
     let p1_result = part1(&data);
     println!("Part 1 Total {}", p1_result);
 
@@ -12,9 +12,8 @@ fn main() {
 }
 
 fn part1(input: &str) -> u64 {
-    let mut lines = input.lines();
+    let mut lines = input.lines().filter(|x| x.len() > 0);
     let directions: Vec<Direction> = get_directions(lines.next().unwrap());
-    let _ = lines.next();
     let map: HashMap<&str, Next> = lines.map(|x| extract(x)).collect();
 
     let mut current_key: &str = &"AAA";
@@ -70,7 +69,7 @@ fn to_direction(character: char) -> Direction {
     match character {
         'L' => return Direction::Left,
         'R' => return Direction::Right,
-        _ => panic!(),
+        _ => panic!("Bad char: {character}"),
     }
 }
 
@@ -80,6 +79,7 @@ fn extract(data: &str) -> (&str, Next) {
     let next_parts: Vec<&str> = parts
         .next()
         .unwrap()
+        .trim_matches(char::is_whitespace)
         .trim_matches(|c| c == '(' || c == ')')
         .split(',')
         .map(|x| x.trim())
