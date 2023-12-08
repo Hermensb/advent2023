@@ -26,11 +26,13 @@ fn part1(input: &str) -> u64 {
 fn part2(input: &str) -> u64 {
     let mut hands: Vec<Hand> = input.lines().map(|x| Hand::new(x, true)).collect();
     hands.sort();
+
     let score: u64 = hands
         .iter()
         .enumerate()
         .map(|x| (x.0 + 1) as u64 * x.1.bid)
         .sum();
+
     score
 }
 
@@ -162,7 +164,7 @@ impl Hand {
         if self.items.values().filter(|x| x == &&2).count() == 1 {
             return true;
         }
-        if self.part2{
+        if self.part2 {
             if let Some(_count) = self.items.get(&'J') {
                 return true;
             }
