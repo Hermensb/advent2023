@@ -13,14 +13,21 @@ fn main() {
 }
 
 fn part1(_input: &str) -> u64 {
-    0
+    let mut hands: Vec<Hand> = _input.lines().map(|x| Hand::new(x)).collect();
+    hands.sort();
+    let score: u64 = hands
+        .iter()
+        .enumerate()
+        .map(|x| (x.0 + 1) as u64 * x.1.bid)
+        .sum();
+    score
 }
 
 fn part2(_input: &str) -> u64 {
     0
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 struct Hand {
     pub items: HashMap<char, u8>,
     pub order_rep: u64,
@@ -34,7 +41,6 @@ impl Hand {
         let bid: u64 = parts.last().unwrap().trim().parse().unwrap();
         let order_rep: u64 = hand_to_hex(&cards);
         let items = get_card_counts(&cards);
-        println!("{items:?}");
 
         Hand {
             items,
@@ -56,12 +62,21 @@ impl Hand {
         }
         false
     }
+
     fn is_full_house(&self) -> bool {
         if self.items.values().collect::<HashSet<&u8>>() == HashSet::from([&2, &3]) {
             return true;
         }
         false
     }
+
+    fn is_three_of_a_kind(&self) -> bool {
+        if self.items.values().filter(|x| x == &&3).count() == 1 {
+            return true;
+        }
+        false
+    }
+
     fn is_two_pair(&self) -> bool {
         if self.items.values().filter(|x| x == &&2).count() == 2 {
             return true;
@@ -79,7 +94,61 @@ impl Hand {
 
 impl PartialOrd for Hand {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        todo!();
+        let self_val = get_hand_val(self);
+        let other_val = get_hand_val(other);
+
+        if self_val > other_val {
+            return Some(std::cmp::Ordering::Greater);
+        } else if self_val < other_val {
+            return Some(std::cmp::Ordering::Less);
+        } else {
+            if self.order_rep > other.order_rep {
+                return Some(std::cmp::Ordering::Greater);
+            } else if self.order_rep < other.order_rep {
+                return Some(std::cmp::Ordering::Less);
+            } else if self.order_rep == other.order_rep {
+                return Some(std::cmp::Ordering::Equal);
+            } else {
+                return None;
+            }
+        }
+    }
+}
+
+impl Eq for Hand {}
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        let result = self.partial_cmp(other);
+        match result {
+            Some(out) => return out,
+            _ => panic!(),
+        }
+    }
+}
+impl PartialEq for Hand {
+    fn eq(&self, other: &Self) -> bool {
+        if self.order_rep == other.order_rep {
+            return true;
+        }
+        false
+    }
+}
+
+fn get_hand_val(hand: &Hand) -> u8 {
+    if hand.is_five_of_a_kind() {
+        return 6;
+    } else if hand.is_four_of_a_kind() {
+        return 5;
+    } else if hand.is_full_house() {
+        return 4;
+    } else if hand.is_three_of_a_kind() {
+        return 3;
+    } else if hand.is_two_pair() {
+        return 2;
+    } else if hand.is_pair() {
+        return 1;
+    } else {
+        return 0;
     }
 }
 
@@ -184,4 +253,10 @@ fn test_two_pair() {
 fn test_pair() {
     let hand = Hand::new("78967 567");
     assert!(hand.is_pair());
+}
+
+#[test]
+fn test_three_of_a_kind() {
+    let hand = Hand::new("65646 554");
+    assert!(hand.is_three_of_a_kind());
 }
