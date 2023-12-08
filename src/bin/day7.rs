@@ -65,8 +65,10 @@ impl Hand {
             return true;
         }
         if self.part2 {
-            if self.items.keys().filter(|x| x != &&'J').count() == 1 {
-                return true;
+            if let Some(_count) = self.items.get(&'J') {
+                if self.items.values().len() <= 2 {
+                    return true;
+                }
             }
         }
         false
@@ -78,15 +80,19 @@ impl Hand {
         }
         if self.part2 {
             if let Some(count) = self.items.get(&'J') {
-                let needed = 4 - count;
-                let found = self
-                    .items
-                    .iter()
-                    .filter(|x| x.0 != &'J')
-                    .filter(|x| x.1 >= &needed)
-                    .count();
-                if found == 1 {
-                    return true;
+                match count {
+                    3..=u8::MAX => return true,
+                    2 => {
+                        if self.items.values().len() < 4 {
+                            return true;
+                        }
+                    }
+                    1 => {
+                        if self.items.values().any(|&i| i == 3) {
+                            return true;
+                        }
+                    }
+                    0 => {}
                 }
             }
         }
@@ -373,6 +379,16 @@ fn test_part1() {
 #[test]
 fn test_part2() {
     assert_eq!(part2(&get_test_data()), 5905)
+}
+
+#[test]
+fn test_part1_more_data() {
+    assert_eq!(part1(&get_more_test_data()), 6592)
+}
+
+#[test]
+fn test_part2_more_data() {
+    assert_eq!(part2(&get_more_test_data()), 6839)
 }
 
 #[test]
