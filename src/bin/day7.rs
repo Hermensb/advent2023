@@ -363,14 +363,13 @@ fn test_hand_creation() {
 
 #[test]
 fn test_hand_creation_part2() {
-    let hand = Hand::new("QQQJA 514", false);
+    let hand = Hand::new("QQQJA 514", true);
     let expected = Hand {
         items: HashMap::from([('Q', 3), ('J', 1), ('A', 1)]),
         order_rep: 0xAAA0C,
         bid: 514,
         part2: true,
     };
-    //println!("{hand.order_rep:x}");
     assert_eq!(hand, expected);
 }
 
