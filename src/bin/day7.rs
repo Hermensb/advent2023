@@ -1,4 +1,7 @@
-use std::{collections::HashMap, fs};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+};
 
 fn main() {
     let data: String = fs::read_to_string("data/day7").expect("Didn't find the file?");
@@ -31,6 +34,7 @@ impl Hand {
         let bid: u64 = parts.last().unwrap().trim().parse().unwrap();
         let order_rep: u64 = hand_to_hex(&cards);
         let items = get_card_counts(&cards);
+        println!("{items:?}");
 
         Hand {
             items,
@@ -38,11 +42,50 @@ impl Hand {
             bid,
         }
     }
+
+    fn is_five_of_a_kind(&self) -> bool {
+        if self.items.values().len() == 1 {
+            return true;
+        }
+        false
+    }
+
+    fn is_four_of_a_kind(&self) -> bool {
+        if self.items.values().filter(|x| x == &&4).count() == 1 {
+            return true;
+        }
+        false
+    }
+    fn is_full_house(&self) -> bool {
+        if self.items.values().collect::<HashSet<&u8>>() == HashSet::from([&2, &3]) {
+            return true;
+        }
+        false
+    }
+    fn is_two_pair(&self) -> bool {
+        if self.items.values().filter(|x| x == &&2).count() == 2 {
+            return true;
+        }
+        false
+    }
+
+    fn is_pair(&self) -> bool {
+        if self.items.values().filter(|x| x == &&2).count() == 1 {
+            return true;
+        }
+        false
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        todo!();
+    }
 }
 
 fn get_card_counts(input: &str) -> HashMap<char, u8> {
     let mut result = HashMap::new();
-    for c in input.chars(){
+    for c in input.chars() {
         *result.entry(c).or_default() += 1;
     }
     result
@@ -68,7 +111,11 @@ fn char_to_hex(input: char) -> char {
 }
 
 fn hand_to_hex(input: &str) -> u64 {
-    u64::from_str_radix(&input.chars().map(|x| char_to_hex(x)).collect::<String>(), 16).unwrap()
+    u64::from_str_radix(
+        &input.chars().map(|x| char_to_hex(x)).collect::<String>(),
+        16,
+    )
+    .unwrap()
 }
 
 fn get_test_data() -> String {
@@ -107,4 +154,34 @@ fn test_hand_to_hex() {
     let hand: String = "AKQJT98765432".to_string();
     let expected: u64 = 0xCBA9876543210;
     assert_eq!(hand_to_hex(&hand), expected);
+}
+
+#[test]
+fn test_five_of_kind() {
+    let hand = Hand::new("AAAAA 111");
+    assert!(hand.is_five_of_a_kind());
+}
+
+#[test]
+fn test_four_of_a_kind() {
+    let hand = Hand::new("QQJQQ 45456");
+    assert!(hand.is_four_of_a_kind());
+}
+
+#[test]
+fn test_full_house() {
+    let hand = Hand::new("33232 4454");
+    assert!(hand.is_full_house());
+}
+
+#[test]
+fn test_two_pair() {
+    let hand = Hand::new("23423 5");
+    assert!(hand.is_two_pair());
+}
+
+#[test]
+fn test_pair() {
+    let hand = Hand::new("78967 567");
+    assert!(hand.is_pair());
 }
