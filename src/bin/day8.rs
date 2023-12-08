@@ -13,7 +13,7 @@ fn main() {
 fn part1(input: &str) -> u64 {
     let mut lines = input.lines().filter(|x| x.len() > 0);
     let directions: Vec<Direction> = get_directions(lines.next().unwrap());
-    let map: HashMap<String, Next> = lines.map(|x| extract(x)).collect();
+    let map: HashMap<&str, Next> = lines.map(|x| extract(x)).collect();
 
     let mut current_key: &str = &"AAA";
     let mut steps: u64 = 0;
@@ -27,14 +27,19 @@ fn part1(input: &str) -> u64 {
 }
 
 fn part2(input: &str) -> u64 {
-    let mut lines = input.lines().filter(|x| x.len() > 0);
-    let directions: Vec<Direction> = get_directions(lines.next().unwrap());
-    let map: HashMap<String, Next> = lines.map(|x| extract(x)).collect();
-
-    let mut current_keys: Vec<String> = map
-        .keys()
-        .filter(|&x| x.ends_with('A'))
+    let lines: Vec<String> = input
+        .lines()
+        .filter(|x| x.len() > 0)
         .map(|x| x.to_string())
+        .collect();
+    let directions: Vec<Direction> = get_directions(&lines.first().unwrap());
+    let map: HashMap<&str, Next> = lines.iter().skip(1).map(|x| extract(x)).collect();
+    let keys: Vec<&str> = lines.iter().skip(1).map(|x| extract(x).0).collect();
+
+    let mut current_keys: Vec<&str> = keys
+        .iter()
+        .filter(|&&x| x.ends_with('A'))
+        .map(|&x| x)
         .collect();
     let mut steps: u64 = 0;
     let path_count: usize = current_keys.len();
@@ -45,13 +50,9 @@ fn part2(input: &str) -> u64 {
 
         for i in 0..path_count {
             let key = &current_keys[i];
-            current_keys[i] = map.get(key).unwrap().next(next_instruction).to_string();
+            current_keys[i] = map.get(key).unwrap().next(next_instruction);
         }
         steps += 1;
-
-        if steps % 1_000_000 == 0 {
-            println!("{steps:?}");
-        }
     }
     steps
 }
@@ -97,9 +98,9 @@ fn to_direction(character: char) -> Direction {
     }
 }
 
-fn extract(data: &str) -> (String, Next) {
+fn extract(data: &str) -> (&str, Next) {
     let mut parts = data.split('=');
-    let key: String = parts.next().unwrap().trim().to_string();
+    let key: &str = parts.next().unwrap().trim();
     let next_parts: Vec<&str> = parts
         .next()
         .unwrap()
