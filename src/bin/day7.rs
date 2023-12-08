@@ -12,8 +12,8 @@ fn main() {
     println!("Part 2 Total {}", p2_result);
 }
 
-fn part1(_input: &str) -> u64 {
-    let mut hands: Vec<Hand> = _input.lines().map(|x| Hand::new(x)).collect();
+fn part1(input: &str) -> u64 {
+    let mut hands: Vec<Hand> = input.lines().map(|x| Hand::new(x, false)).collect();
     hands.sort();
     let score: u64 = hands
         .iter()
@@ -23,8 +23,15 @@ fn part1(_input: &str) -> u64 {
     score
 }
 
-fn part2(_input: &str) -> u64 {
-    0
+fn part2(input: &str) -> u64 {
+    let mut hands: Vec<Hand> = input.lines().map(|x| Hand::new(x, true)).collect();
+    hands.sort();
+    let score: u64 = hands
+        .iter()
+        .enumerate()
+        .map(|x| (x.0 + 1) as u64 * x.1.bid)
+        .sum();
+    score
 }
 
 #[derive(Debug)]
@@ -32,26 +39,33 @@ struct Hand {
     pub items: HashMap<char, u8>,
     pub order_rep: u64,
     pub bid: u64,
+    pub part2: bool,
 }
 
 impl Hand {
-    fn new(input: &str) -> Hand {
+    fn new(input: &str, part2: bool) -> Hand {
         let parts: Vec<&str> = input.trim().split(' ').collect();
         let cards: String = parts.first().unwrap().trim().to_string();
         let bid: u64 = parts.last().unwrap().trim().parse().unwrap();
-        let order_rep: u64 = hand_to_hex(&cards);
+        let order_rep: u64 = hand_to_hex(&cards, part2);
         let items = get_card_counts(&cards);
 
         Hand {
             items,
             order_rep,
             bid,
+            part2,
         }
     }
 
     fn is_five_of_a_kind(&self) -> bool {
         if self.items.values().len() == 1 {
             return true;
+        }
+        if self.part2 {
+            if self.items.keys().filter(|x| x != &&'J').count() == 1 {
+                return true;
+            }
         }
         false
     }
@@ -60,6 +74,20 @@ impl Hand {
         if self.items.values().filter(|x| x == &&4).count() == 1 {
             return true;
         }
+        if self.part2 {
+            if let Some(count) = self.items.get(&'J') {
+                let needed = 4 - count;
+                let found = self
+                    .items
+                    .iter()
+                    .filter(|x| x.0 != &'J')
+                    .filter(|x| x.1 >= &needed)
+                    .count();
+                if found == 1 {
+                    return true;
+                }
+            }
+        }
         false
     }
 
@@ -67,12 +95,45 @@ impl Hand {
         if self.items.values().collect::<HashSet<&u8>>() == HashSet::from([&2, &3]) {
             return true;
         }
+        if self.part2 {
+            if let Some(count) = self.items.get(&'J') {
+                match count {
+                    3 => return true,
+                    2 => {
+                        if self.items.values().len() < 4 {
+                            return true;
+                        }
+                    }
+                    1 => {
+                        if self.items.values().len() == 3 {
+                            return true;
+                        }
+                    }
+                    _ => return true,
+                }
+            }
+        }
+
         false
     }
 
     fn is_three_of_a_kind(&self) -> bool {
         if self.items.values().filter(|x| x == &&3).count() == 1 {
             return true;
+        }
+        if self.part2 {
+            if let Some(count) = self.items.get(&'J') {
+                let needed = 3 - count;
+                let found = self
+                    .items
+                    .iter()
+                    .filter(|x| x.0 != &'J')
+                    .filter(|x| x.1 >= &needed)
+                    .count();
+                if found >= 1 {
+                    return true;
+                }
+            }
         }
         false
     }
@@ -81,12 +142,30 @@ impl Hand {
         if self.items.values().filter(|x| x == &&2).count() == 2 {
             return true;
         }
+        if self.part2 {
+            if let Some(count) = self.items.get(&'J') {
+                match count {
+                    2 => return true,
+                    1 => {
+                        if self.items.values().len() < 5 {
+                            return true;
+                        }
+                    }
+                    _ => return true,
+                }
+            }
+        }
         false
     }
 
     fn is_pair(&self) -> bool {
         if self.items.values().filter(|x| x == &&2).count() == 1 {
             return true;
+        }
+        if self.part2{
+            if let Some(_count) = self.items.get(&'J') {
+                return true;
+            }
         }
         false
     }
@@ -160,18 +239,78 @@ fn get_card_counts(input: &str) -> HashMap<char, u8> {
     result
 }
 
-fn char_to_hex(input: char) -> char {
+fn char_to_hex(input: char, part2: bool) -> char {
     match input {
-        '2' => return '0',
-        '3' => return '1',
-        '4' => return '2',
-        '5' => return '3',
-        '6' => return '4',
-        '7' => return '5',
-        '8' => return '6',
-        '9' => return '7',
-        'T' => return '8',
-        'J' => return '9',
+        '2' => {
+            if !part2 {
+                return '0';
+            } else {
+                return '1';
+            }
+        }
+        '3' => {
+            if !part2 {
+                return '1';
+            } else {
+                return '2';
+            }
+        }
+        '4' => {
+            if !part2 {
+                return '2';
+            } else {
+                return '3';
+            }
+        }
+        '5' => {
+            if !part2 {
+                return '3';
+            } else {
+                return '4';
+            }
+        }
+        '6' => {
+            if !part2 {
+                return '4';
+            } else {
+                return '5';
+            }
+        }
+        '7' => {
+            if !part2 {
+                return '5';
+            } else {
+                return '6';
+            }
+        }
+        '8' => {
+            if !part2 {
+                return '6';
+            } else {
+                return '7';
+            }
+        }
+        '9' => {
+            if !part2 {
+                return '7';
+            } else {
+                return '8';
+            }
+        }
+        'T' => {
+            if !part2 {
+                return '8';
+            } else {
+                return '9';
+            }
+        }
+        'J' => {
+            if !part2 {
+                return '9';
+            } else {
+                return '0';
+            }
+        }
         'Q' => return 'a',
         'K' => return 'b',
         'A' => return 'c',
@@ -179,14 +318,18 @@ fn char_to_hex(input: char) -> char {
     }
 }
 
-fn hand_to_hex(input: &str) -> u64 {
+fn hand_to_hex(input: &str, part2: bool) -> u64 {
     u64::from_str_radix(
-        &input.chars().map(|x| char_to_hex(x)).collect::<String>(),
+        &input
+            .chars()
+            .map(|x| char_to_hex(x, part2))
+            .collect::<String>(),
         16,
     )
     .unwrap()
 }
 
+#[allow(dead_code)]
 fn get_test_data() -> String {
     "32T3K 765
 T55J5 684
@@ -203,18 +346,31 @@ fn test_part1() {
 
 #[test]
 fn test_part2() {
-    todo!("fill in correct expectation");
-    assert_eq!(part2(&get_test_data()), 1)
+    assert_eq!(part2(&get_test_data()), 5905)
 }
 
 #[test]
 fn test_hand_creation() {
-    let hand = Hand::new("QQQJA 514");
+    let hand = Hand::new("QQQJA 514", false);
     let expected = Hand {
         items: HashMap::from([('Q', 3), ('J', 1), ('A', 1)]),
         order_rep: 0xAAA9C,
         bid: 514,
+        part2: false,
     };
+    assert_eq!(hand, expected);
+}
+
+#[test]
+fn test_hand_creation_part2() {
+    let hand = Hand::new("QQQJA 514", false);
+    let expected = Hand {
+        items: HashMap::from([('Q', 3), ('J', 1), ('A', 1)]),
+        order_rep: 0xAAA0C,
+        bid: 514,
+        part2: true,
+    };
+    //println!("{hand.order_rep:x}");
     assert_eq!(hand, expected);
 }
 
@@ -222,41 +378,96 @@ fn test_hand_creation() {
 fn test_hand_to_hex() {
     let hand: String = "AKQJT98765432".to_string();
     let expected: u64 = 0xCBA9876543210;
-    assert_eq!(hand_to_hex(&hand), expected);
+    assert_eq!(hand_to_hex(&hand, false), expected);
+}
+
+#[test]
+fn test_hand_to_hex_part2() {
+    let hand: String = "AKQJT98765432".to_string();
+    let expected: u64 = 0xCBA0987654321;
+    assert_eq!(hand_to_hex(&hand, true), expected);
 }
 
 #[test]
 fn test_five_of_kind() {
-    let hand = Hand::new("AAAAA 111");
+    let hand = Hand::new("AAAAA 111", false);
     assert!(hand.is_five_of_a_kind());
 }
 
 #[test]
+fn test_five_of_kind_part2() {
+    let hand = Hand::new("22JJ2 111", true);
+    assert!(hand.is_five_of_a_kind());
+}
+
+#[test]
+fn test_four_of_a_kind_part2() {
+    let hand = Hand::new("23J3J 321", true);
+    assert!(hand.is_four_of_a_kind());
+}
+
+#[test]
 fn test_four_of_a_kind() {
-    let hand = Hand::new("QQJQQ 45456");
+    let hand = Hand::new("QQJQQ 45456", false);
     assert!(hand.is_four_of_a_kind());
 }
 
 #[test]
 fn test_full_house() {
-    let hand = Hand::new("33232 4454");
+    let hand = Hand::new("33232 4454", false);
+    assert!(hand.is_full_house());
+}
+
+#[test]
+fn test_full_house_part2() {
+    let hand = Hand::new("3323J 4454", true);
+    assert!(hand.is_full_house());
+}
+
+#[test]
+fn test_full_house_part2_2() {
+    let hand = Hand::new("3J23J 4454", true);
     assert!(hand.is_full_house());
 }
 
 #[test]
 fn test_two_pair() {
-    let hand = Hand::new("23423 5");
+    let hand = Hand::new("23423 5", false);
+    assert!(hand.is_two_pair());
+}
+
+#[test]
+fn test_two_pair_part2() {
+    let hand = Hand::new("2342J 5", true);
+    assert!(hand.is_two_pair());
+}
+
+#[test]
+fn test_two_pair_part2_2() {
+    let hand = Hand::new("234JJ 5", true);
     assert!(hand.is_two_pair());
 }
 
 #[test]
 fn test_pair() {
-    let hand = Hand::new("78967 567");
+    let hand = Hand::new("78967 567", false);
+    assert!(hand.is_pair());
+}
+
+#[test]
+fn test_pair_part2() {
+    let hand = Hand::new("78967 567", true);
     assert!(hand.is_pair());
 }
 
 #[test]
 fn test_three_of_a_kind() {
-    let hand = Hand::new("65646 554");
+    let hand = Hand::new("65646 554", false);
+    assert!(hand.is_three_of_a_kind());
+}
+
+#[test]
+fn test_three_of_a_kind_part2() {
+    let hand = Hand::new("J5J46 554", true);
     assert!(hand.is_three_of_a_kind());
 }
