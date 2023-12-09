@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 
 fn main() {
@@ -36,25 +36,32 @@ fn part2(input: &str) -> u64 {
     let map: HashMap<&str, Next> = lines.iter().skip(1).map(|x| extract(x)).collect();
     let keys: Vec<&str> = lines.iter().skip(1).map(|x| extract(x).0).collect();
 
-    let mut current_keys: Vec<&str> = keys
+    let start_points: Vec<&str> = keys
         .iter()
         .filter(|&&x| x.ends_with('A'))
         .map(|&x| x)
         .collect();
-    let mut steps: u64 = 0;
-    let path_count: usize = current_keys.len();
 
-    while &current_keys.iter().filter(|x| x.ends_with('Z')).count() < &path_count {
-        let d_index = (steps % directions.len() as u64) as usize;
-        let next_instruction = &directions[d_index];
+    for point in start_points {
+        let mut seen: HashSet<&str> = HashSet::new();
+        let mut current: &str = point;
+        let mut count: u64 = 0;
 
-        for i in 0..path_count {
-            let key = &current_keys[i];
-            current_keys[i] = map.get(key).unwrap().next(next_instruction);
+        while !seen.contains(current) {
+            let d_index = (count % directions.len() as u64) as usize;
+            let next_instruction = &directions[d_index];
+
+            if current.ends_with('Z') {
+                seen.insert(current);
+            println!("Found {current:?} at count {count}");
+            }
+            current = map.get(current).unwrap().next(next_instruction);
+            count += 1;
         }
-        steps += 1;
+        println!("Final Count: {count}");
+
     }
-    steps
+    0
 }
 
 #[derive(Debug, PartialEq)]
