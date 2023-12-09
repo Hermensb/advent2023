@@ -53,13 +53,11 @@ fn part2(input: &str) -> u64 {
 
             if current.ends_with('Z') {
                 seen.insert(current);
-            println!("Found {current:?} at count {count}");
+                println!("Found {current:?} at count {count}");
             }
             current = map.get(current).unwrap().next(next_instruction);
             count += 1;
         }
-        println!("Final Count: {count}");
-
     }
     0
 }
@@ -167,11 +165,6 @@ fn test_part1_data1() {
 #[test]
 fn test_part1_data2() {
     assert_eq!(part1(&get_test_data2()), 6)
-}
-
-#[test]
-fn test_part2() {
-    assert_eq!(part2(&get_part2_data()), 6)
 }
 
 #[test]

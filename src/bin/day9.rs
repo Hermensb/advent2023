@@ -42,8 +42,13 @@ fn get_differences(sequence: &Vec<i64>) -> Vec<i64> {
         .collect::<Vec<i64>>()
 }
 
-fn extract_sequence(input: &str) -> Vec<i64>{
-    input.trim().split(' ').filter(|x| x.len() > 0).map(|x| x.parse().unwrap()).collect()
+fn extract_sequence(input: &str) -> Vec<i64> {
+    input
+        .trim()
+        .split(' ')
+        .filter(|x| x.len() > 0)
+        .map(|x| x.parse().unwrap())
+        .collect()
 }
 
 #[allow(dead_code)]
@@ -79,14 +84,14 @@ fn test_get_next_in_sequence() {
 }
 
 #[test]
-fn test_line_to_vec_of_nums(){
+fn test_line_to_vec_of_nums() {
     let input = "455 822 357 454";
     let expected: Vec<i64> = vec![455, 822, 357, 454];
     assert_eq!(extract_sequence(&input), expected);
 }
 
 #[test]
-fn test_get_first_item(){
+fn test_get_first_item() {
     let input = vec![3, 5, 7, 9, 11];
     let expected = 1;
     assert_eq!(get_first_item(&input), 1);
