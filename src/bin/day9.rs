@@ -94,5 +94,5 @@ fn test_line_to_vec_of_nums() {
 fn test_get_first_item() {
     let input = vec![3, 5, 7, 9, 11];
     let expected = 1;
-    assert_eq!(get_first_item(&input), 1);
+    assert_eq!(get_first_item(&input), expected);
 }
