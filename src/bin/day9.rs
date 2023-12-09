@@ -16,8 +16,10 @@ fn part1(input: &str) -> i64 {
     next_vals.iter().sum()
 }
 
-fn part2(input: &str) -> u64 {
-    0
+fn part2(input: &str) -> i64 {
+    let sequence_list: Vec<Vec<i64>> = input.lines().map(|x| extract_sequence(x)).collect();
+    let next_vals: Vec<i64> = sequence_list.iter().map(|x| get_first_item(x)).collect();
+    next_vals.iter().sum()
 }
 
 fn get_next_item(sequence: &Vec<i64>) -> i64 {
@@ -28,6 +30,10 @@ fn get_next_item(sequence: &Vec<i64>) -> i64 {
 }
 
 fn get_first_item(sequence: &Vec<i64>) -> i64 {
+    if sequence.iter().collect::<HashSet<&i64>>() == HashSet::from([&0]) {
+        return 0;
+    }
+    sequence.first().unwrap() - get_first_item(&get_differences(&sequence))
 }
 
 fn get_differences(sequence: &Vec<i64>) -> Vec<i64> {
@@ -77,4 +83,11 @@ fn test_line_to_vec_of_nums(){
     let input = "455 822 357 454";
     let expected: Vec<i64> = vec![455, 822, 357, 454];
     assert_eq!(extract_sequence(&input), expected);
+}
+
+#[test]
+fn test_get_first_item(){
+    let input = vec![3, 5, 7, 9, 11];
+    let expected = 1;
+    assert_eq!(get_first_item(&input), 1);
 }
