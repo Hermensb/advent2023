@@ -12,7 +12,6 @@ fn main() {
 fn part1(input: &str) -> u64 {
     let processed_data = data_to_vec(input);
     let start = find_start(&processed_data);
-    println!("{start:?}");
     0
 }
 
@@ -37,4 +36,54 @@ fn find_start(input: &Vec<Vec<char>>) -> Option<(usize, usize)> {
         }
     }
     None
+}
+
+#[allow(dead_code)]
+fn get_test_data_1() -> String {
+    ".....
+.S-7.
+.|.|.
+.L-J.
+....."
+        .to_string()
+}
+
+#[allow(dead_code)]
+fn get_test_data_2() -> String {
+    "..F7.
+.FJ|.
+SJ.L7
+|F--J
+LJ..."
+        .to_string()
+}
+
+#[test]
+fn test_part1_data_1() {
+    assert_eq!(part1(&get_test_data_1()), 4);
+}
+
+#[test]
+fn test_part1_data_2() {
+    assert_eq!(part1(&get_test_data_2()), 8);
+}
+
+#[test]
+fn test_data_to_vec() {
+    let expected: Vec<Vec<char>> = vec![
+        vec!['.', '.', '.', '.', '.'],
+        vec!['.', 'S', '-', '7', '.'],
+        vec!['.', '|', '.', '|', '.'],
+        vec!['.', 'L', '-', 'J', '.'],
+        vec!['.', '.', '.', '.', '.'],
+    ];
+    assert_eq!(expected, data_to_vec(&get_test_data_1()));
+}
+
+#[test]
+fn test_find_start() {
+    let path1 = data_to_vec(&get_test_data_1());
+    let path2 = data_to_vec(&get_test_data_2());
+    assert_eq!(find_start(&path1), Some((1, 1)));
+    assert_eq!(find_start(&path2), Some((2, 0)));
 }
