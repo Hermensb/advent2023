@@ -30,13 +30,18 @@ fn find_galaxies(sky_map: &str) -> HashSet<Location> {
         for (column, object) in line.chars().enumerate() {
             match object {
                 '#' => {
-                    locations.insert(Location { x: column, y: row  });
+                    locations.insert(Location { x: column, y: row });
                 }
                 _ => {}
             }
         }
     }
     locations
+}
+
+fn get_empty_rows(galaxies: &HashSet<Location>, total_rows: usize) -> HashSet<usize> {
+    let filled_rows: HashSet<usize> = galaxies.iter().map(|x| x.y).collect();
+    (0..10).filter(|x| !filled_rows.contains(x)).collect()
 }
 
 #[allow(dead_code)]
@@ -71,4 +76,11 @@ fn test_find_galaxies() {
     let diff = galaxies.difference(&expected);
     println!("Unexpected locations: {diff:?}");
     assert_eq!(galaxies, expected);
+}
+
+#[test]
+fn test_find_empty_rows() {
+    let empty_rows: HashSet<usize> = get_empty_rows(&find_galaxies(&get_test_data()), 10);
+    let expected: HashSet<usize> = HashSet::from([3, 7]);
+    assert_eq!(empty_rows, expected);
 }
