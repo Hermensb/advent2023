@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::HashSet, fs};
 
 fn main() {
     let data: String = fs::read_to_string("data/day10").expect("Didn't find the file?");
@@ -36,6 +36,56 @@ fn find_start(input: &Vec<Vec<char>>) -> Option<(usize, usize)> {
         }
     }
     None
+}
+
+#[derive(Debug, Hash, Eq, PartialEq)]
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+fn find_first_steps(input: &Vec<Vec<char>>) -> HashSet<Direction> {
+    let mut result = HashSet::new();
+
+    if let Some((row, column)) = find_start(input) {
+        if let Some(directions) = get_directions(&input[row + 1][column]) {
+            if directions.contains(&Direction::Up) {
+                result.insert(Direction::Down);
+            }
+        }
+        if let Some(directions) = get_directions(&input[row - 1][column]) {
+            if directions.contains(&Direction::Down) {
+                result.insert(Direction::Up);
+            }
+        }
+        if let Some(directions) = get_directions(&input[row][column + 1]) {
+            if directions.contains(&Direction::Left) {
+                result.insert(Direction::Right);
+            }
+        }
+        if let Some(directions) = get_directions(&input[row][column - 1]) {
+            if directions.contains(&Direction::Right) {
+                result.insert(Direction::Left);
+            }
+        }
+    } else {
+        panic!("No start found!");
+    }
+    result
+}
+
+fn get_directions(input: &char) -> Option<HashSet<Direction>> {
+    match input {
+        '|' => Some(HashSet::from([Direction::Up, Direction::Down])),
+        '-' => Some(HashSet::from([Direction::Left, Direction::Right])),
+        'J' => Some(HashSet::from([Direction::Up, Direction::Left])),
+        'L' => Some(HashSet::from([Direction::Up, Direction::Right])),
+        'F' => Some(HashSet::from([Direction::Down, Direction::Right])),
+        '7' => Some(HashSet::from([Direction::Left, Direction::Down])),
+        _ => None,
+    }
 }
 
 #[allow(dead_code)]
@@ -86,4 +136,12 @@ fn test_find_start() {
     let path2 = data_to_vec(&get_test_data_2());
     assert_eq!(find_start(&path1), Some((1, 1)));
     assert_eq!(find_start(&path2), Some((2, 0)));
+}
+
+#[test]
+fn test_find_first_steps() {
+    let data = data_to_vec(&get_test_data_1());
+    let steps = find_first_steps(&data);
+    let expected = HashSet::from([Direction::Down, Direction::Right]);
+    assert_eq!(steps, expected);
 }
