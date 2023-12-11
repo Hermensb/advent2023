@@ -44,6 +44,11 @@ fn get_empty_rows(galaxies: &HashSet<Location>, total_rows: usize) -> HashSet<us
     (0..10).filter(|x| !filled_rows.contains(x)).collect()
 }
 
+fn get_empty_colums(galaxies: &HashSet<Location>, total_rows: usize) -> HashSet<usize> {
+    let filled_columns: HashSet<usize> = galaxies.iter().map(|x| x.x).collect();
+    (0..10).filter(|x| !filled_columns.contains(x)).collect()
+}
+
 #[allow(dead_code)]
 fn get_test_data() -> String {
     "...#......
@@ -84,3 +89,10 @@ fn test_find_empty_rows() {
     let expected: HashSet<usize> = HashSet::from([3, 7]);
     assert_eq!(empty_rows, expected);
 }
+
+#[test]
+fn test_find_empty_columns() {
+    let empty_rows: HashSet<usize> = get_empty_colums(&find_galaxies(&get_test_data()), 10);
+    let expected: HashSet<usize> = HashSet::from([2, 5, 8]);
+    assert_eq!(empty_rows, expected);
+    }
