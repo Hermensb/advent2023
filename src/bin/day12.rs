@@ -17,6 +17,11 @@ fn part2(input: &str) -> usize {
     0
 }
 
+fn get_counts(input: &str) -> Vec<usize> {
+    input.split(' ').last().unwrap().split(',').map(|x| x.parse::<usize>().unwrap()).collect()
+}
+
+
 #[allow(dead_code)]
 fn get_test_data() -> String {
     "???.### 1,1,3
@@ -26,4 +31,13 @@ fn get_test_data() -> String {
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1"
         .to_string()
+}
+
+#[test]
+fn test_count_extraction(){
+    let data = get_test_data();
+    let first_line = data.lines().next().unwrap();
+    let counts: Vec<usize> = get_counts(&first_line);
+    let expected = vec![1,1,3];
+    assert_eq!(counts, expected);
 }
