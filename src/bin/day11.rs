@@ -75,9 +75,10 @@ fn expand_universe(
 
     let mut result = HashSet::new();
     for location in galaxies {
-        let y = location.y + ((multiplier - 1) * empty_rows.iter().filter(|&&i| i < location.y).count());
-        let x =
-            location.x + ((multiplier - 1) * empty_columns.iter().filter(|&&i| i < location.x).count());
+        let y = location.y
+            + ((multiplier - 1) * empty_rows.iter().filter(|&&i| i < location.y).count());
+        let x = location.x
+            + ((multiplier - 1) * empty_columns.iter().filter(|&&i| i < location.x).count());
         result.insert(Location { x, y });
     }
 

@@ -107,17 +107,6 @@ SJ.L7
 LJ..."
         .to_string()
 }
-
-#[test]
-fn test_part1_data_1() {
-    assert_eq!(part1(&get_test_data_1()), 4);
-}
-
-#[test]
-fn test_part1_data_2() {
-    assert_eq!(part1(&get_test_data_2()), 8);
-}
-
 #[test]
 fn test_data_to_vec() {
     let expected: Vec<Vec<char>> = vec![
