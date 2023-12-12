@@ -12,13 +12,17 @@ fn main() {
 fn part1(input: &str) -> usize {
     let rows = input.lines().count();
     let columns = input.lines().next().unwrap().len();
-    let new_locations = expand_universe(&find_galaxies(input), (rows, columns));
+    let new_locations = expand_universe(&find_galaxies(input), (rows, columns), 2);
     let permutations: Vec<(&Location, &Location)> = get_permutations(&new_locations);
     permutations.iter().map(|x| x.0.distance_to(x.1)).sum()
 }
 
-fn part2(input: &str) -> u64 {
-    0
+fn part2(input: &str) -> usize {
+    let rows = input.lines().count();
+    let columns = input.lines().next().unwrap().len();
+    let new_locations = expand_universe(&find_galaxies(input), (rows, columns), 1_000_000);
+    let permutations: Vec<(&Location, &Location)> = get_permutations(&new_locations);
+    permutations.iter().map(|x| x.0.distance_to(x.1)).sum()
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -56,17 +60,24 @@ fn get_empty_rows(galaxies: &HashSet<Location>, rows: usize) -> HashSet<usize> {
 
 fn get_empty_colums(galaxies: &HashSet<Location>, columns: usize) -> HashSet<usize> {
     let filled_columns: HashSet<usize> = galaxies.iter().map(|x| x.x).collect();
-    (0..columns).filter(|x| !filled_columns.contains(x)).collect()
+    (0..columns)
+        .filter(|x| !filled_columns.contains(x))
+        .collect()
 }
 
-fn expand_universe(galaxies: &HashSet<Location>, size: (usize, usize)) -> HashSet<Location> {
+fn expand_universe(
+    galaxies: &HashSet<Location>,
+    size: (usize, usize),
+    multiplier: usize,
+) -> HashSet<Location> {
     let empty_columns = get_empty_colums(galaxies, size.1);
     let empty_rows = get_empty_rows(galaxies, size.0);
 
     let mut result = HashSet::new();
     for location in galaxies {
-        let y = location.y + empty_rows.iter().filter(|&&i| i < location.y).count();
-        let x = location.x + empty_columns.iter().filter(|&&i| i < location.x).count();
+        let y = location.y + ((multiplier - 1) * empty_rows.iter().filter(|&&i| i < location.y).count());
+        let x =
+            location.x + ((multiplier - 1) * empty_columns.iter().filter(|&&i| i < location.x).count());
         result.insert(Location { x, y });
     }
 
@@ -136,7 +147,7 @@ fn test_find_empty_columns() {
 
 #[test]
 fn test_expand_universe() {
-    let new_locations = expand_universe(&find_galaxies(&get_test_data()), (10, 10));
+    let new_locations = expand_universe(&find_galaxies(&get_test_data()), (10, 10), 2);
     let expanded_data = "....#........
 .........#...
 #............
@@ -163,7 +174,7 @@ fn test_distance_between_locations() {
 
 #[test]
 fn test_gather_galaxy_pairs() {
-    let new_locations = expand_universe(&find_galaxies(&get_test_data()), (10, 10));
+    let new_locations = expand_universe(&find_galaxies(&get_test_data()), (10, 10), 2);
     let permutations: Vec<(&Location, &Location)> = get_permutations(&new_locations);
     assert_eq!(permutations.len(), 36);
 }
