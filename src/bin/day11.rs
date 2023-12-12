@@ -10,7 +10,9 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    let new_locations = expand_universe(&find_galaxies(input));
+    let rows = input.lines().count();
+    let columns = input.lines().next().unwrap().len();
+    let new_locations = expand_universe(&find_galaxies(input), (rows, columns));
     let permutations: Vec<(&Location, &Location)> = get_permutations(&new_locations);
     permutations.iter().map(|x| x.0.distance_to(x.1)).sum()
 }
@@ -47,19 +49,19 @@ fn find_galaxies(sky_map: &str) -> HashSet<Location> {
     locations
 }
 
-fn get_empty_rows(galaxies: &HashSet<Location>) -> HashSet<usize> {
+fn get_empty_rows(galaxies: &HashSet<Location>, rows: usize) -> HashSet<usize> {
     let filled_rows: HashSet<usize> = galaxies.iter().map(|x| x.y).collect();
-    (0..10).filter(|x| !filled_rows.contains(x)).collect()
+    (0..rows).filter(|x| !filled_rows.contains(x)).collect()
 }
 
-fn get_empty_colums(galaxies: &HashSet<Location>) -> HashSet<usize> {
+fn get_empty_colums(galaxies: &HashSet<Location>, columns: usize) -> HashSet<usize> {
     let filled_columns: HashSet<usize> = galaxies.iter().map(|x| x.x).collect();
-    (0..10).filter(|x| !filled_columns.contains(x)).collect()
+    (0..columns).filter(|x| !filled_columns.contains(x)).collect()
 }
 
-fn expand_universe(galaxies: &HashSet<Location>) -> HashSet<Location> {
-    let empty_columns = get_empty_colums(galaxies);
-    let empty_rows = get_empty_rows(galaxies);
+fn expand_universe(galaxies: &HashSet<Location>, size: (usize, usize)) -> HashSet<Location> {
+    let empty_columns = get_empty_colums(galaxies, size.1);
+    let empty_rows = get_empty_rows(galaxies, size.0);
 
     let mut result = HashSet::new();
     for location in galaxies {
@@ -120,21 +122,21 @@ fn test_find_galaxies() {
 
 #[test]
 fn test_find_empty_rows() {
-    let empty_rows: HashSet<usize> = get_empty_rows(&find_galaxies(&get_test_data()));
+    let empty_rows: HashSet<usize> = get_empty_rows(&find_galaxies(&get_test_data()), 10);
     let expected: HashSet<usize> = HashSet::from([3, 7]);
     assert_eq!(empty_rows, expected);
 }
 
 #[test]
 fn test_find_empty_columns() {
-    let empty_rows: HashSet<usize> = get_empty_colums(&find_galaxies(&get_test_data()));
+    let empty_rows: HashSet<usize> = get_empty_colums(&find_galaxies(&get_test_data()), 10);
     let expected: HashSet<usize> = HashSet::from([2, 5, 8]);
     assert_eq!(empty_rows, expected);
 }
 
 #[test]
 fn test_expand_universe() {
-    let new_locations = expand_universe(&find_galaxies(&get_test_data()));
+    let new_locations = expand_universe(&find_galaxies(&get_test_data()), (10, 10));
     let expanded_data = "....#........
 .........#...
 #............
@@ -161,7 +163,7 @@ fn test_distance_between_locations() {
 
 #[test]
 fn test_gather_galaxy_pairs() {
-    let new_locations = expand_universe(&find_galaxies(&get_test_data()));
+    let new_locations = expand_universe(&find_galaxies(&get_test_data()), (10, 10));
     let permutations: Vec<(&Location, &Location)> = get_permutations(&new_locations);
     assert_eq!(permutations.len(), 36);
 }
