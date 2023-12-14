@@ -27,14 +27,6 @@ fn get_counts(input: &str) -> Vec<usize> {
         .collect()
 }
 
-fn get_permutations(options: &Vec<char>, count: u32) -> Vec<String> {
-    let mut result: Vec<String> = vec![];
-    let perm_count: usize = options.len().pow(count);
-
-    (0..perm_count).map(|x| (0..count).fold(vec![] | acc, y | acc.push(options[(x as u32 % count as u32) as usize])));
-
-        vec![]
-}
 
 #[allow(dead_code)]
 fn get_test_data() -> String {
@@ -74,7 +66,3 @@ fn test_permutations() {
     ];
 }
 
-#[test]
-fn test_fold() {
-    (0..10).fold(vec![] |acc, x| acc.push(x));
-}
