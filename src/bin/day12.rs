@@ -1,4 +1,4 @@
-use std::{fs, io::Write};
+use std::fs;
 
 fn main() {
     let data: String = fs::read_to_string("data/day12").expect("Didn't find the file?");
@@ -47,20 +47,3 @@ fn test_count_extraction() {
     assert_eq!(counts, expected);
 }
 
-#[test]
-fn test_permutations() {
-    let options = vec!['1', '2', '3'];
-    let count = 2;
-    let perms: Vec<String> = get_permutations(&options, count);
-    let expected: Vec<String> = vec![
-        "11".to_string(),
-        "12".to_string(),
-        "13".to_string(),
-        "21".to_string(),
-        "22".to_string(),
-        "23".to_string(),
-        "31".to_string(),
-        "32".to_string(),
-        "33".to_string(),
-    ];
-}

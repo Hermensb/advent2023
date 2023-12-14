@@ -38,12 +38,30 @@ fn find_start(input: &Vec<Vec<char>>) -> Option<(usize, usize)> {
     None
 }
 
-#[derive(Debug, Hash, Eq, PartialEq)]
-enum Direction<T> {
-    North(T),
-    South(T),
-    East(T),
-    West(T),
+
+struct Pipe {
+    pub connections: Vec<Coord>,
+}
+
+impl Pipe {
+    fn new(letter: char, location: Coord) -> Pipe {
+        let mut connections: Vec<Coord>;
+
+        match letter {
+            '|' => todo!(),
+            '-' => todo!(),
+            'J' => todo!(),
+            '7' => todo!(),
+            'F' => todo!(),
+            'L' => todo!(),
+            _ => panic!(),
+        }
+    }
+}
+
+struct Coord {
+    pub row: usize,
+    pub column: usize,
 }
 
 #[allow(dead_code)]
@@ -83,4 +101,11 @@ fn test_find_start() {
     let path2 = data_to_vec(&get_test_data_2());
     assert_eq!(find_start(&path1), Some((1, 1)));
     assert_eq!(find_start(&path2), Some((2, 0)));
+}
+
+#[test]
+fn test_numbers(){
+    let a: usize = 5;
+    let b: usize = 7;
+    let c: usize = 5 % 7;
 }
