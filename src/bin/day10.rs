@@ -46,7 +46,6 @@ enum Direction<T> {
     West(T),
 }
 
-
 #[allow(dead_code)]
 fn get_test_data_1() -> String {
     ".....

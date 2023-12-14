@@ -27,7 +27,6 @@ fn get_counts(input: &str) -> Vec<usize> {
         .collect()
 }
 
-
 #[allow(dead_code)]
 fn get_test_data() -> String {
     "???.### 1,1,3
@@ -65,4 +64,3 @@ fn test_permutations() {
         "33".to_string(),
     ];
 }
-
