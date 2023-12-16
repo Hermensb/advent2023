@@ -45,15 +45,51 @@ struct Pipe {
 
 impl Pipe {
     fn new(letter: char, location: (usize, usize), grid_size: (usize, usize)) -> Pipe {
-        let mut _connections: Vec<Coord<usize>>;
+        let (north, south, east, west) = find_valid_spaces(location, grid_size);
 
         match letter {
-            '|' => todo!(),
-            '-' => todo!(),
-            'J' => todo!(),
-            '7' => todo!(),
-            'F' => todo!(),
-            'L' => todo!(),
+            '|' => Pipe {
+                connections: [north, south]
+                    .iter()
+                    .filter(|x| !x.is_none())
+                    .map(|x| x.unwrap())
+                    .collect(),
+            },
+            '-' => Pipe {
+                connections: [east, west]
+                    .iter()
+                    .filter(|x| !x.is_none())
+                    .map(|x| x.unwrap())
+                    .collect(),
+            },
+            'J' => Pipe {
+                connections: [north, west]
+                    .iter()
+                    .filter(|x| !x.is_none())
+                    .map(|x| x.unwrap())
+                    .collect(),
+            },
+            '7' => Pipe {
+                connections: [west, south]
+                    .iter()
+                    .filter(|x| !x.is_none())
+                    .map(|x| x.unwrap())
+                    .collect(),
+            },
+            'F' => Pipe {
+                connections: [east, south]
+                    .iter()
+                    .filter(|x| !x.is_none())
+                    .map(|x| x.unwrap())
+                    .collect(),
+            },
+            'L' => Pipe {
+                connections: [north, east]
+                    .iter()
+                    .filter(|x| !x.is_none())
+                    .map(|x| x.unwrap())
+                    .collect(),
+            },
             _ => panic!(),
         }
     }
@@ -68,7 +104,12 @@ fn get_size(space: &Vec<Vec<char>>) -> (usize, usize) {
 fn find_valid_spaces(
     input: (usize, usize),
     space_size: (usize, usize),
-) -> Vec<Option<(usize, usize)>> {
+) -> (
+    Option<(usize, usize)>,
+    Option<(usize, usize)>,
+    Option<(usize, usize)>,
+    Option<(usize, usize)>,
+) {
     let row: i64 = input.0 as i64;
     let column: i64 = input.1 as i64;
     let max_row: i64 = space_size.0 as i64;
@@ -83,30 +124,33 @@ fn find_valid_spaces(
     let east = (row, column + 1);
     let west = (row, column - 1);
 
-    let mut result: Vec<Option<(usize, usize)>> = vec![];
+    let n_ret: Option<(usize, usize)>;
+    let s_ret: Option<(usize, usize)>;
+    let e_ret: Option<(usize, usize)>;
+    let w_ret: Option<(usize, usize)>;
 
     if north.0 < 0 {
-        result.push(None)
+        n_ret = None;
     } else {
-        result.push(Some((north.0 as usize, north.1 as usize)))
+        n_ret = Some((north.0 as usize, north.1 as usize));
     }
     if south.0 >= max_row {
-        result.push(None)
+        s_ret = None;
     } else {
-        result.push(Some((south.0 as usize, south.1 as usize)))
+        s_ret = Some((south.0 as usize, south.1 as usize));
     }
     if east.1 >= max_column {
-        result.push(None)
+        e_ret = None;
     } else {
-        result.push(Some((east.0 as usize, east.1 as usize)))
+        e_ret = Some((east.0 as usize, east.1 as usize));
     }
     if west.1 < 0 {
-        result.push(None)
+        w_ret = None;
     } else {
-        result.push(Some((west.0 as usize, west.1 as usize)))
+        w_ret = Some((west.0 as usize, west.1 as usize));
     }
 
-    result
+    (n_ret, s_ret, e_ret, w_ret)
 }
 
 #[derive(Debug, PartialEq)]
