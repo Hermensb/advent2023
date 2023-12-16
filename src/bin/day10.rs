@@ -1,4 +1,5 @@
 use std::fs;
+    use std::collections::HashSet;
 
 fn main() {
     let data: String = fs::read_to_string("data/day10").expect("Didn't find the file?");
@@ -40,7 +41,7 @@ fn find_start(input: &Vec<Vec<char>>) -> Option<(usize, usize)> {
 
 #[derive(Debug, PartialEq)]
 struct Pipe {
-    pub connections: Vec<(usize, usize)>,
+    pub connections: HashSet<(usize, usize)>,
 }
 
 impl Pipe {
@@ -153,137 +154,134 @@ fn find_valid_spaces(
     (n_ret, s_ret, e_ret, w_ret)
 }
 
-#[derive(Debug, PartialEq)]
-struct Coord<T> {
-    pub row: T,
-    pub column: T,
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[allow(dead_code)]
-fn get_test_data_1() -> String {
-    ".....
+    fn get_test_data_1() -> String {
+        ".....
 .S-7.
 .|.|.
 .L-J.
 ....."
-        .to_string()
-}
+            .to_string()
+    }
 
-#[allow(dead_code)]
-fn get_test_data_2() -> String {
-    "..F7.
+    fn get_test_data_2() -> String {
+        "..F7.
 .FJ|.
 SJ.L7
 |F--J
 LJ..."
-        .to_string()
-}
-#[test]
-fn test_data_to_vec() {
-    let expected: Vec<Vec<char>> = vec![
-        vec!['.', '.', '.', '.', '.'],
-        vec!['.', 'S', '-', '7', '.'],
-        vec!['.', '|', '.', '|', '.'],
-        vec!['.', 'L', '-', 'J', '.'],
-        vec!['.', '.', '.', '.', '.'],
-    ];
-    assert_eq!(expected, data_to_vec(&get_test_data_1()));
-}
+            .to_string()
+    }
+    #[test]
+    fn test_data_to_vec() {
+        let expected: Vec<Vec<char>> = vec![
+            vec!['.', '.', '.', '.', '.'],
+            vec!['.', 'S', '-', '7', '.'],
+            vec!['.', '|', '.', '|', '.'],
+            vec!['.', 'L', '-', 'J', '.'],
+            vec!['.', '.', '.', '.', '.'],
+        ];
+        assert_eq!(expected, data_to_vec(&get_test_data_1()));
+    }
 
-#[test]
-fn test_find_start() {
-    let path1 = data_to_vec(&get_test_data_1());
-    let path2 = data_to_vec(&get_test_data_2());
-    assert_eq!(find_start(&path1), Some((1, 1)));
-    assert_eq!(find_start(&path2), Some((2, 0)));
-}
+    #[test]
+    fn test_find_start() {
+        let path1 = data_to_vec(&get_test_data_1());
+        let path2 = data_to_vec(&get_test_data_2());
+        assert_eq!(find_start(&path1), Some((1, 1)));
+        assert_eq!(find_start(&path2), Some((2, 0)));
+    }
 
-#[test]
-fn test_create_pipe_with_J() {
-    let pipe = Pipe::new('J', (1, 1), (3, 3));
-    let expected = Pipe {
-        connections: vec![(0, 1), (1, 0)],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn test_create_pipe_with_J() {
+        let pipe = Pipe::new('J', (1, 1), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([(0, 1), (1, 0)]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn test_create_pipe_with_F() {
-    let pipe = Pipe::new('F', (1, 1), (3, 3));
-    let expected = Pipe {
-        connections: vec![(1, 2), (2, 1)],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn test_create_pipe_with_F() {
+        let pipe = Pipe::new('F', (1, 1), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([(1, 2), (2, 1)]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn test_create_pipe_with_7() {
-    let pipe = Pipe::new('7', (1, 1), (3, 3));
-    let expected = Pipe {
-        connections: vec![(1, 0), (2, 1)],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn test_create_pipe_with_7() {
+        let pipe = Pipe::new('7', (1, 1), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([(1, 0), (2, 1)]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn test_create_pipe_with_L() {
-    let pipe = Pipe::new('L', (1, 1), (3, 3));
-    let expected = Pipe {
-        connections: vec![(1, 2), (0, 1)],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn test_create_pipe_with_L() {
+        let pipe = Pipe::new('L', (1, 1), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([(1, 2), (0, 1)]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn test_create_pipe_with_dash() {
-    let pipe = Pipe::new('-', (1, 1), (3, 3));
-    let expected = Pipe {
-        connections: vec![(1, 0), (1, 2)],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn test_create_pipe_with_dash() {
+        let pipe = Pipe::new('-', (1, 1), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([(1, 0), (1, 2)]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn test_create_pipe_with_vert() {
-    let pipe = Pipe::new('-', (1, 1), (3, 3));
-    let expected = Pipe {
-        connections: vec![(1, 0), (1, 2)],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn test_create_pipe_with_vert() {
+        let pipe = Pipe::new('-', (1, 1), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([(1, 0), (1, 2)]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn create_J_pipe_at_corner() {
-    let pipe = Pipe::new('J', (0, 0), (3, 3));
-    let expected = Pipe {
-        connections: vec![],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn create_J_pipe_at_corner() {
+        let pipe = Pipe::new('J', (0, 0), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn create_F_pipe_at_corner() {
-    let pipe = Pipe::new('F', (2, 2), (3, 3));
-    let expected = Pipe {
-        connections: vec![],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn create_F_pipe_at_corner() {
+        let pipe = Pipe::new('F', (2, 2), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn create_7_pipe_at_corner() {
-    let pipe = Pipe::new('7', (2, 0), (3, 3));
-    let expected = Pipe {
-        connections: vec![],
-    };
-    assert_eq!(pipe, expected);
-}
+    #[test]
+    fn create_7_pipe_at_corner() {
+        let pipe = Pipe::new('7', (2, 0), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([]),
+        };
+        assert_eq!(pipe, expected);
+    }
 
-#[test]
-fn create_L_pipe_at_corner() {
-    let pipe = Pipe::new('L', (0, 2), (3, 3));
-    let expected = Pipe {
-        connections: vec![],
-    };
-    assert_eq!(pipe, expected);
+    #[test]
+    fn create_L_pipe_at_corner() {
+        let pipe = Pipe::new('L', (0, 2), (3, 3));
+        let expected = Pipe {
+            connections: HashSet::from([]),
+        };
+        assert_eq!(pipe, expected);
+    }
 }
