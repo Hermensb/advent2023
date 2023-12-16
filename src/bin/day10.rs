@@ -27,30 +27,24 @@ fn data_to_vec(input: &str) -> Vec<Vec<char>> {
         .collect()
 }
 
-fn find_start(input: &Vec<Vec<char>>) -> Option<Coord<usize>> {
+fn find_start(input: &Vec<Vec<char>>) -> Option<(usize, usize)> {
     for (row, chars) in input.iter().enumerate() {
         for (column, letter) in chars.iter().enumerate() {
             if letter == &'S' {
-                return Some(Coord { row, column });
+                return Some((row, column));
             }
         }
     }
     None
 }
 
-enum Direction<T> {
-    North(T),
-    South(T),
-    East(T),
-    West(T),
-}
-
+#[derive(Debug, PartialEq)]
 struct Pipe {
-    pub connections: Vec<Coord<usize>>,
+    pub connections: Vec<(usize, usize)>,
 }
 
 impl Pipe {
-    fn new(letter: char, location: &Coord<usize>, path: &Vec<Vec<char>>) -> Pipe {
+    fn new(letter: char, location: (usize, usize), grid_size: (usize, usize)) -> Pipe {
         let mut _connections: Vec<Coord<usize>>;
 
         match letter {
@@ -65,16 +59,22 @@ impl Pipe {
     }
 }
 
-fn find_valid_spaces(
-    input: &Coord<usize>,
-    path: &Vec<Vec<char>>,
-) -> Vec<Direction<Option<Coord<usize>>>> {
-    let row: i64 = input.row as i64;
-    let column: i64 = input.column as i64;
-    let max_row: i64 = path.len() as i64;
-    let max_column: i64 = path.iter().map(|x| x.len()).min().unwrap() as i64;
+fn get_size(space: &Vec<Vec<char>>) -> (usize, usize) {
+    let max_row: usize = space.len();
+    let max_column: usize = space.iter().map(|x| x.len()).min().unwrap();
+    (max_row, max_column)
+}
 
-    if input.column as i64 >= max_column || input.row as i64 >= max_row{
+fn find_valid_spaces(
+    input: (usize, usize),
+    space_size: (usize, usize),
+) -> Vec<Option<(usize, usize)>> {
+    let row: i64 = input.0 as i64;
+    let column: i64 = input.1 as i64;
+    let max_row: i64 = space_size.0 as i64;
+    let max_column: i64 = space_size.1 as i64;
+
+    if input.1 as i64 >= max_column || input.0 as i64 >= max_row {
         panic!("Invalid input! Out of bounds!");
     }
 
@@ -83,44 +83,30 @@ fn find_valid_spaces(
     let east = (row, column + 1);
     let west = (row, column - 1);
 
-    let mut result: Vec<Direction<Option<Coord<usize>>>> = vec![];
+    let mut result: Vec<Option<(usize, usize)>> = vec![];
 
-    use Direction::*;
     if north.0 < 0 {
-        result.push(North(None))
+        result.push(None)
     } else {
-        result.push(North(Some(Coord {
-            row: north.0 as usize,
-            column: north.1 as usize,
-        })))
+        result.push(Some((north.0 as usize, north.1 as usize)))
     }
     if south.0 >= max_row {
-        result.push(South(None))
+        result.push(None)
     } else {
-        result.push(South(Some(Coord {
-            row: south.0 as usize,
-            column: south.1 as usize,
-        })))
+        result.push(Some((south.0 as usize, south.1 as usize)))
     }
-    if east.1 >= max_column{
-        result.push(East(None))
+    if east.1 >= max_column {
+        result.push(None)
     } else {
-        result.push(East(Some(Coord {
-            row: east.0 as usize,
-            column: east.1 as usize,
-        })))
+        result.push(Some((east.0 as usize, east.1 as usize)))
     }
     if west.1 < 0 {
-        result.push(West(None))
+        result.push(None)
     } else {
-        result.push(West(Some(Coord {
-            row: west.0 as usize,
-            column: west.1 as usize,
-        })))
+        result.push(Some((west.0 as usize, west.1 as usize)))
     }
 
     result
-
 }
 
 #[derive(Debug, PartialEq)]
@@ -164,53 +150,96 @@ fn test_data_to_vec() {
 fn test_find_start() {
     let path1 = data_to_vec(&get_test_data_1());
     let path2 = data_to_vec(&get_test_data_2());
-    assert_eq!(find_start(&path1), Some(Coord { row: 1, column: 1 }));
-    assert_eq!(find_start(&path2), Some(Coord { row: 2, column: 0 }));
-}
-
-#[test]
-fn test_numbers() {
-    let _a: usize = 5;
-    let _b: usize = 7;
-    let _c: usize = 5 % 7;
+    assert_eq!(find_start(&path1), Some((1, 1)));
+    assert_eq!(find_start(&path2), Some((2, 0)));
 }
 
 #[test]
 fn test_create_pipe_with_J() {
-    todo!();
+    let pipe = Pipe::new('J', (1, 1), (3, 3));
+    let expected = Pipe {
+        connections: vec![(0, 1), (1, 0)],
+    };
+    assert_eq!(pipe, expected);
 }
 
 #[test]
 fn test_create_pipe_with_F() {
-    todo!();
+    let pipe = Pipe::new('F', (1, 1), (3, 3));
+    let expected = Pipe {
+        connections: vec![(1, 2), (2, 1)],
+    };
+    assert_eq!(pipe, expected);
 }
 
 #[test]
 fn test_create_pipe_with_7() {
-    todo!();
+    let pipe = Pipe::new('7', (1, 1), (3, 3));
+    let expected = Pipe {
+        connections: vec![(1, 0), (2, 1)],
+    };
+    assert_eq!(pipe, expected);
 }
 
 #[test]
 fn test_create_pipe_with_L() {
-    todo!();
+    let pipe = Pipe::new('L', (1, 1), (3, 3));
+    let expected = Pipe {
+        connections: vec![(1, 2), (0, 1)],
+    };
+    assert_eq!(pipe, expected);
 }
 
 #[test]
 fn test_create_pipe_with_dash() {
-    todo!();
+    let pipe = Pipe::new('-', (1, 1), (3, 3));
+    let expected = Pipe {
+        connections: vec![(1, 0), (1, 2)],
+    };
+    assert_eq!(pipe, expected);
 }
 
 #[test]
 fn test_create_pipe_with_vert() {
-    todo!();
+    let pipe = Pipe::new('-', (1, 1), (3, 3));
+    let expected = Pipe {
+        connections: vec![(1, 0), (1, 2)],
+    };
+    assert_eq!(pipe, expected);
 }
 
 #[test]
 fn create_J_pipe_at_corner() {
-    todo!();
+    let pipe = Pipe::new('J', (0, 0), (3, 3));
+    let expected = Pipe {
+        connections: vec![],
+    };
+    assert_eq!(pipe, expected);
 }
 
 #[test]
 fn create_F_pipe_at_corner() {
-    todo!();
+    let pipe = Pipe::new('F', (2, 2), (3, 3));
+    let expected = Pipe {
+        connections: vec![],
+    };
+    assert_eq!(pipe, expected);
+}
+
+#[test]
+fn create_7_pipe_at_corner() {
+    let pipe = Pipe::new('7', (2, 0), (3, 3));
+    let expected = Pipe {
+        connections: vec![],
+    };
+    assert_eq!(pipe, expected);
+}
+
+#[test]
+fn create_L_pipe_at_corner() {
+    let pipe = Pipe::new('L', (0, 2), (3, 3));
+    let expected = Pipe {
+        connections: vec![],
+    };
+    assert_eq!(pipe, expected);
 }
