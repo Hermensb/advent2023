@@ -1,5 +1,5 @@
+use std::collections::HashSet;
 use std::fs;
-    use std::collections::HashSet;
 
 fn main() {
     let data: String = fs::read_to_string("data/day10").expect("Didn't find the file?");
@@ -11,8 +11,7 @@ fn main() {
 }
 
 fn part1(input: &str) -> u64 {
-    let processed_data = data_to_vec(input);
-    let _start = find_start(&processed_data);
+    let processed_data = chars_to_pipes(&data_to_vec(input));
     0
 }
 
@@ -28,11 +27,28 @@ fn data_to_vec(input: &str) -> Vec<Vec<char>> {
         .collect()
 }
 
-fn find_start(input: &Vec<Vec<char>>) -> Option<(usize, usize)> {
-    for (row, chars) in input.iter().enumerate() {
-        for (column, letter) in chars.iter().enumerate() {
-            if letter == &'S' {
-                return Some((row, column));
+fn chars_to_pipes(input: &Vec<Vec<char>>) -> Vec<Vec<Option<Pipe>>> {
+    let mut result: Vec<Vec<Option<Pipe>>> = vec![];
+    for (row, line) in input.iter().enumerate() {
+        let pipes: Vec<Option<Pipe>> = line
+            .iter()
+            .enumerate()
+            .map(|x| Pipe::new(*x.1, (row, x.0), get_size(input)))
+            .collect();
+        result.push(pipes);
+    }
+    result
+}
+
+fn find_start(input: &Vec<Vec<Option<Pipe>>>) -> Option<(usize, usize)> {
+    let (rows, columns) = get_size(input);
+    for row in 0..rows {
+        for column in 0..columns {
+            if let Some(pipe) = &input[row][column] {
+                if pipe.start {
+                    return Some((row, column));
+                }
+            } else {
             }
         }
     }
@@ -42,61 +58,72 @@ fn find_start(input: &Vec<Vec<char>>) -> Option<(usize, usize)> {
 #[derive(Debug, PartialEq)]
 struct Pipe {
     pub connections: HashSet<(usize, usize)>,
+    pub start: bool,
 }
 
 impl Pipe {
-    fn new(letter: char, location: (usize, usize), grid_size: (usize, usize)) -> Pipe {
+    fn new(letter: char, location: (usize, usize), grid_size: (usize, usize)) -> Option<Pipe> {
         let (north, south, east, west) = find_valid_spaces(location, grid_size);
 
         match letter {
-            '|' => Pipe {
+            '|' => Some(Pipe {
                 connections: [north, south]
                     .iter()
                     .filter(|x| !x.is_none())
                     .map(|x| x.unwrap())
                     .collect(),
-            },
-            '-' => Pipe {
+                start: false,
+            }),
+            '-' => Some(Pipe {
                 connections: [east, west]
                     .iter()
                     .filter(|x| !x.is_none())
                     .map(|x| x.unwrap())
                     .collect(),
-            },
-            'J' => Pipe {
+                start: false,
+            }),
+            'J' => Some(Pipe {
                 connections: [north, west]
                     .iter()
                     .filter(|x| !x.is_none())
                     .map(|x| x.unwrap())
                     .collect(),
-            },
-            '7' => Pipe {
+                start: false,
+            }),
+            '7' => Some(Pipe {
                 connections: [west, south]
                     .iter()
                     .filter(|x| !x.is_none())
                     .map(|x| x.unwrap())
                     .collect(),
-            },
-            'F' => Pipe {
+                start: false,
+            }),
+            'F' => Some(Pipe {
                 connections: [east, south]
                     .iter()
                     .filter(|x| !x.is_none())
                     .map(|x| x.unwrap())
                     .collect(),
-            },
-            'L' => Pipe {
+                start: false,
+            }),
+            'L' => Some(Pipe {
                 connections: [north, east]
                     .iter()
                     .filter(|x| !x.is_none())
                     .map(|x| x.unwrap())
                     .collect(),
-            },
-            _ => panic!(),
+                start: false,
+            }),
+            'S' => Some(Pipe {
+                connections: HashSet::new(),
+                start: true,
+            }),
+            _ => None,
         }
     }
 }
 
-fn get_size(space: &Vec<Vec<char>>) -> (usize, usize) {
+fn get_size<T>(space: &Vec<Vec<T>>) -> (usize, usize) {
     let max_row: usize = space.len();
     let max_column: usize = space.iter().map(|x| x.len()).min().unwrap();
     (max_row, max_column)
@@ -175,6 +202,17 @@ SJ.L7
 LJ..."
             .to_string()
     }
+
+    #[test]
+    fn test_find_start() {
+        let Some(start): Option<(usize, usize)> =
+            find_start(&chars_to_pipes(&data_to_vec(&get_test_data_1())))
+        else {
+            panic!()
+        };
+        assert_eq!(start, (1, 1));
+    }
+
     #[test]
     fn test_data_to_vec() {
         let expected: Vec<Vec<char>> = vec![
@@ -188,100 +226,135 @@ LJ..."
     }
 
     #[test]
-    fn test_find_start() {
-        let path1 = data_to_vec(&get_test_data_1());
-        let path2 = data_to_vec(&get_test_data_2());
-        assert_eq!(find_start(&path1), Some((1, 1)));
-        assert_eq!(find_start(&path2), Some((2, 0)));
+    fn test_get_size() {
+        let (row, column) = get_size(&data_to_vec(&get_test_data_1()));
+        assert_eq!(row, 5);
+        assert_eq!(column, 5);
     }
 
     #[test]
     fn test_create_pipe_with_J() {
-        let pipe = Pipe::new('J', (1, 1), (3, 3));
+        let Some(pipe) = Pipe::new('J', (1, 1), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([(0, 1), (1, 0)]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn test_create_pipe_with_F() {
-        let pipe = Pipe::new('F', (1, 1), (3, 3));
+        let Some(pipe) = Pipe::new('F', (1, 1), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([(1, 2), (2, 1)]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn test_create_pipe_with_7() {
-        let pipe = Pipe::new('7', (1, 1), (3, 3));
+        let Some(pipe) = Pipe::new('7', (1, 1), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([(1, 0), (2, 1)]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn test_create_pipe_with_L() {
-        let pipe = Pipe::new('L', (1, 1), (3, 3));
+        let Some(pipe) = Pipe::new('L', (1, 1), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([(1, 2), (0, 1)]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn test_create_pipe_with_dash() {
-        let pipe = Pipe::new('-', (1, 1), (3, 3));
+        let Some(pipe) = Pipe::new('-', (1, 1), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([(1, 0), (1, 2)]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn test_create_pipe_with_vert() {
-        let pipe = Pipe::new('-', (1, 1), (3, 3));
+        let Some(pipe) = Pipe::new('-', (1, 1), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([(1, 0), (1, 2)]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn create_J_pipe_at_corner() {
-        let pipe = Pipe::new('J', (0, 0), (3, 3));
+        let Some(pipe) = Pipe::new('J', (0, 0), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn create_F_pipe_at_corner() {
-        let pipe = Pipe::new('F', (2, 2), (3, 3));
+        let Some(pipe) = Pipe::new('F', (2, 2), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn create_7_pipe_at_corner() {
-        let pipe = Pipe::new('7', (2, 0), (3, 3));
+        let Some(pipe) = Pipe::new('7', (2, 0), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([]),
+            start: false,
         };
         assert_eq!(pipe, expected);
     }
 
     #[test]
     fn create_L_pipe_at_corner() {
-        let pipe = Pipe::new('L', (0, 2), (3, 3));
+        let Some(pipe) = Pipe::new('L', (0, 2), (3, 3)) else {
+            panic!()
+        };
         let expected = Pipe {
             connections: HashSet::from([]),
+            start: false,
         };
         assert_eq!(pipe, expected);
+    }
+
+    #[test]
+    fn test_other_char() {
+        let pipe = Pipe::new('.', (0, 0), (3, 3));
+        assert!(pipe.is_none());
     }
 }
